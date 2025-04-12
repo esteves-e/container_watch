@@ -32,6 +32,8 @@ export default function ContainerFormPage() {
     const storedEmail = localStorage.getItem('email')
 
     if (!storedEmail || !isValidRole(storedRole)) {
+      // Salva URL atual para redirecionamento após login
+      localStorage.setItem('redirectAfterLogin', window.location.href)
       router.push('/login')
       return
     }
