@@ -44,7 +44,7 @@ export default function Login() {
 
     const userRole =
       user?.user_metadata?.role ||
-      (user?.raw_user_meta_data as any)?.role
+      (user?.user_metadata as any)?.role
 
     if (!userEmail || !userRole) {
       setMessage('Acesso não autorizado. Role não encontrada.')
