@@ -135,6 +135,10 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+#Ignorar criação automática do model em pages
+pages/model.tsx
+
 =======
 # Dependências do Node.js
 node_modules/
