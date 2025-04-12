@@ -26,6 +26,7 @@ export default function Login() {
   const handleVerifyOtp = async () => {
     setLoading(true)
     setMessage('')
+
     const { data, error } = await supabase.auth.verifyOtp({
       email,
       token: otp,
@@ -40,8 +41,11 @@ export default function Login() {
 
     const user = data.user
     const userEmail = user?.email
-    const userRole = data?.user?.user_metadata?.role
-    
+
+    const userRole =
+      user?.user_metadata?.role ||
+      (user?.raw_user_meta_data as any)?.role
+
     if (!userEmail || !userRole) {
       setMessage('Acesso não autorizado. Role não encontrada.')
       setLoading(false)
