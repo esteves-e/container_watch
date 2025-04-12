@@ -59,7 +59,11 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (selectedContainer && typeof window !== 'undefined') {
-      setQrUrl(`${window.location.origin}/containerForm?id=${selectedContainer.id}&name=${selectedContainer.name}&location=${selectedContainer.location}`)
+      const url = new URL('/containerForm', window.location.origin)
+      url.searchParams.set('id', selectedContainer.id)
+      url.searchParams.set('name', selectedContainer.name)
+      url.searchParams.set('location', selectedContainer.location)
+      setQrUrl(url.toString())
     }
   }, [selectedContainer])
 
