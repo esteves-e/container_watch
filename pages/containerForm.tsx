@@ -1,3 +1,4 @@
+// pages/containerForm.tsx
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
@@ -27,6 +28,7 @@ export default function ContainerFormPage() {
   const [containerName, setContainerName] = useState('')
   const [containerLocation, setContainerLocation] = useState('')
 
+  // Autenticação e preenchimento do container
   useEffect(() => {
     const storedRole = localStorage.getItem('role')
     const storedEmail = localStorage.getItem('email')
@@ -70,7 +72,7 @@ export default function ContainerFormPage() {
       alert('Erro ao salvar: ' + error.message)
     } else {
       alert('Formulário enviado com sucesso!')
-      router.push('/dashboard')
+      router.push('/containers')
     }
   }
 
@@ -93,7 +95,7 @@ export default function ContainerFormPage() {
       alert('Erro ao salvar comentário: ' + error.message)
     } else {
       alert('Comentário enviado com sucesso!')
-      router.push('/dashboard')
+      router.push('/containers')
     }
   }
 

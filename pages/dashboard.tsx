@@ -36,27 +36,27 @@ export default function Dashboard() {
 
     setUserEmail(email)
     setRole(role)
-
-    const storedContainers = localStorage.getItem('containers')
-    if (storedContainers) {
-      setContainers(JSON.parse(storedContainers))
-    }
-
-    const fetchForms = async () => {
-      const { data, error } = await supabase
-        .from('form_responses')
-        .select('*')
-        .order('created_at', { ascending: false })
-
-      if (!error && data) setFormResponses(data)
-    }
-
+    fetchContainers()
     fetchForms()
   }, [router])
 
-  useEffect(() => {
-    localStorage.setItem('containers', JSON.stringify(containers))
-  }, [containers])
+  const fetchContainers = async () => {
+    const { data, error } = await supabase
+      .from('containers')
+      .select('*')
+      .order('created_at', { ascending: false })
+
+    if (!error && data) setContainers(data)
+  }
+
+  const fetchForms = async () => {
+    const { data, error } = await supabase
+      .from('form_responses')
+      .select('*')
+      .order('created_at', { ascending: false })
+
+    if (!error && data) setFormResponses(data)
+  }
 
   useEffect(() => {
     if (selectedContainer && typeof window !== 'undefined') {
@@ -68,16 +68,23 @@ export default function Dashboard() {
     }
   }, [selectedContainer])
 
-  const handleAddContainer = () => {
+  const handleAddContainer = async () => {
     if (!name) return alert('Nome é obrigatório!')
-    const newContainer: Container = {
-      id: Math.random().toString(36).substring(2, 10),
+
+    const { error } = await supabase.from('containers').insert({
       name,
       location,
+      created_by: userEmail,
+    })
+
+    if (error) {
+      alert('Erro ao adicionar container: ' + error.message)
+      return
     }
-    setContainers(prev => [...prev, newContainer])
+
     setName('')
     setLocation('')
+    fetchContainers()
   }
 
   const handleDeleteResponse = async (id: string) => {
@@ -121,7 +128,6 @@ export default function Dashboard() {
         </button>
       </div>
 
-      {/* Modal de QR Code */}
       {selectedContainer && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-6 shadow-lg w-full max-w-sm text-center relative">
@@ -151,7 +157,6 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Containers */}
       <div className="max-w-3xl mx-auto w-full">
         <div className="bg-white rounded-xl shadow-md p-4 border mb-6">
           <h2 className="text-lg font-semibold mb-2">Criar novo container</h2>
@@ -177,7 +182,6 @@ export default function Dashboard() {
           </button>
         </div>
 
-        {/* Lista */}
         <h2 className="text-lg font-semibold mb-3">Containers cadastrados</h2>
         <div className="space-y-4">
           {containers.map(container => (
@@ -228,7 +232,6 @@ export default function Dashboard() {
           ))}
         </div>
 
-        {/* Respostas */}
         <div className="mt-10">
           <h2 className="text-lg font-semibold mb-3">Formulários preenchidos</h2>
           <div className="bg-white rounded-xl shadow p-4">
