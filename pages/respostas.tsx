@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/router'
 import { supabase } from '../lib/supabase'
 import Layout from '../components/layout'
 import Link from 'next/link'
@@ -16,11 +17,12 @@ interface FormResponse {
 export default function ListaRespostas() {
   const [respostas, setRespostas] = useState<FormResponse[]>([])
   const [loading, setLoading] = useState(true)
+  const router = useRouter()
 
   useEffect(() => {
     const role = localStorage.getItem('role')
     if (role !== 'gerente') {
-      window.location.href = '/login'
+      router.push('/login')
       return
     }
 
@@ -37,7 +39,7 @@ export default function ListaRespostas() {
     }
 
     fetchData()
-  }, [])
+  }, [router])
 
   return (
     <Layout>

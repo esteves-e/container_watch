@@ -17,9 +17,9 @@ const mockForm = [
   { id: 'q10', label: 'Checklist adicional (se houver)', type: 'text' }
 ]
 
-export default function ContainerPage() {
+export default function ContainerFormPage() {
   const router = useRouter()
-  const { id } = router.query
+  const { id, name, location } = router.query
 
   const [role, setRole] = useState<Role | null>(null)
   const [email, setEmail] = useState<string | null>(null)
@@ -29,12 +29,17 @@ export default function ContainerPage() {
   const [containerLocation, setContainerLocation] = useState('')
 
   useEffect(() => {
-    const r = localStorage.getItem('role') as Role
-    const e = localStorage.getItem('email')
-    setRole(r)
-    setEmail(e)
+    const storedRole = localStorage.getItem('role') as Role
+    const storedEmail = localStorage.getItem('email')
 
-    const { name, location } = router.query
+    if (!storedRole || !storedEmail) {
+      router.push('/login')
+      return
+    }
+
+    setRole(storedRole)
+    setEmail(storedEmail)
+
     if (typeof name === 'string') setContainerName(name)
     if (typeof location === 'string') setContainerLocation(location)
   }, [router.query])
@@ -42,6 +47,8 @@ export default function ContainerPage() {
   const handleChange = (qid: string, value: string) => {
     setAnswers(prev => ({ ...prev, [qid]: value }))
   }
+
+  const handleClearForm = () => setAnswers({})
 
   const handleSubmit = async () => {
     if (Object.keys(answers).length === 0) {
@@ -89,10 +96,6 @@ export default function ContainerPage() {
     }
   }
 
-  const handleClearForm = () => {
-    setAnswers({})
-  }
-
   if (!id || typeof id !== 'string') return null
 
   return (
@@ -116,7 +119,6 @@ export default function ContainerPage() {
                     <button
                       key={val}
                       type="button"
-                      aria-pressed={answers[q.id] === val}
                       onClick={() => handleChange(q.id, val)}
                       className={`px-4 py-2 rounded border 
                         ${answers[q.id] === val ? 'bg-blue-600 text-white' : 'bg-white text-black'}`}

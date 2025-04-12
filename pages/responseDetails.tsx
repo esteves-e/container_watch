@@ -30,7 +30,7 @@ export default function DetalhesResposta() {
       return
     }
 
-    if (id) {
+    if (id && typeof id === 'string') {
       const fetchData = async () => {
         const { data, error } = await supabase
           .from('form_responses')
@@ -66,16 +66,14 @@ export default function DetalhesResposta() {
               <div>
                 <h2 className="font-bold mt-4 mb-2">Respostas:</h2>
                 <ul className="list-disc ml-5 space-y-1 text-sm">
-                {Object.entries(dados.answers || {}).map(([key, value]) => {
-  const question = mockForm.find(q => q.id === key)
-
-  return (
-    <li key={key}>
-      <strong>{question?.label ?? `Pergunta (${key})`}:</strong> {String(value) || 'Sem resposta'}
-    </li>
-  )
-})}
-
+                  {Object.entries(dados.answers).map(([key, value]) => {
+                    const question = mockForm.find(q => q.id === key)
+                    return (
+                      <li key={key}>
+                        <strong>{question?.label || `Pergunta (${key})`}:</strong> {String(value) || 'Sem resposta'}
+                      </li>
+                    )
+                  })}
                 </ul>
               </div>
             ) : (

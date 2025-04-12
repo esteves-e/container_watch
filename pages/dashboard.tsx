@@ -25,40 +25,41 @@ export default function Dashboard() {
 
   useEffect(() => {
     const email = localStorage.getItem('email')
-    setUserEmail(email)
-  }, [])
-
-  useEffect(() => {
-    const r = localStorage.getItem('role')
-    if (r !== 'gerente') {
+    const role = localStorage.getItem('role')
+  
+    // Proteção de rota
+    if (!email || !role || role !== 'gerente') {
       router.push('/login')
+      return
     }
-    setRole(r)
-  }, [])
-
-  useEffect(() => {
-    const stored = localStorage.getItem('containers')
-    if (stored) {
-      setContainers(JSON.parse(stored))
+  
+    setUserEmail(email)
+    setRole(role)
+  
+    // Carregar containers salvos localmente
+    const storedContainers = localStorage.getItem('containers')
+    if (storedContainers) {
+      setContainers(JSON.parse(storedContainers))
     }
-  }, [])
-
-  useEffect(() => {
-    localStorage.setItem('containers', JSON.stringify(containers))
-  }, [containers])
-
-  useEffect(() => {
+  
+    // Buscar formulários preenchidos
     const fetchForms = async () => {
       const { data, error } = await supabase
         .from('form_responses')
         .select('*')
         .order('created_at', { ascending: false })
-
+  
       if (!error && data) setFormResponses(data)
     }
-
+  
     fetchForms()
   }, [])
+  
+  // Salvar containers sempre que forem atualizados
+  useEffect(() => {
+    localStorage.setItem('containers', JSON.stringify(containers))
+  }, [containers])
+  
 
   const handleAddContainer = () => {
     if (!name) return alert('Nome é obrigatório!')
