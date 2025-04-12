@@ -1,8 +1,7 @@
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
-
-type Role = 'tecnico' | 'auditor' | 'gerente'
+import { Role, isValidRole } from '../lib/roles'
 
 const mockForm = [
   { id: 'q1', label: 'Equipamento está funcionando corretamente?', type: 'boolean' },
@@ -29,10 +28,10 @@ export default function ContainerFormPage() {
   const [containerLocation, setContainerLocation] = useState('')
 
   useEffect(() => {
-    const storedRole = localStorage.getItem('role') as Role
+    const storedRole = localStorage.getItem('role')
     const storedEmail = localStorage.getItem('email')
 
-    if (!storedRole || !storedEmail) {
+    if (!storedEmail || !isValidRole(storedRole)) {
       router.push('/login')
       return
     }
@@ -69,7 +68,7 @@ export default function ContainerFormPage() {
       alert('Erro ao salvar: ' + error.message)
     } else {
       alert('Formulário enviado com sucesso!')
-      router.push('/dashboard')
+      router.push('/containers')
     }
   }
 
@@ -92,7 +91,7 @@ export default function ContainerFormPage() {
       alert('Erro ao salvar comentário: ' + error.message)
     } else {
       alert('Comentário enviado com sucesso!')
-      router.push('/dashboard')
+      router.push('/containers')
     }
   }
 

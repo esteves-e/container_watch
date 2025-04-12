@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/router'
 import { supabase } from '../lib/supabase'
+import { validRoles, invalidRoleMessage, Role } from '../lib/roles'
 
 export default function Login() {
   const [email, setEmail] = useState('')
@@ -43,10 +44,10 @@ export default function Login() {
 
     const user = data.user
     const userEmail = user?.email
-    const userRole = user?.user_metadata?.role
+    const userRole = user?.user_metadata?.role as Role | undefined
 
-    if (!userEmail || !userRole) {
-      setMessage('Acesso não autorizado. Role não encontrada.')
+    if (!userEmail || !userRole || !validRoles.includes(userRole)) {
+      setMessage(invalidRoleMessage)
       setLoading(false)
       return
     }
@@ -54,12 +55,7 @@ export default function Login() {
     localStorage.setItem('email', userEmail)
     localStorage.setItem('role', userRole)
 
-    if (userRole === 'gerente') {
-      router.push('/dashboard')
-    } else {
-      router.push('/containers')
-    }
-
+    router.push(userRole === 'gerente' ? '/dashboard' : '/containers')
     setLoading(false)
   }
 
