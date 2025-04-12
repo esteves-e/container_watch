@@ -29,32 +29,29 @@ export default function Login() {
     const { data, error } = await supabase.auth.verifyOtp({
       email,
       token: otp,
-      type: 'email'
+      type: 'email',
     })
-
-    console.log('Login:', {
-      email: data?.user?.email,
-      role: data?.user?.user_metadata?.role,
-      metadata: data?.user?.user_metadata
-    })
-    
-
-    const userEmail = data?.user?.email
-    const userRole = data.user?.user_metadata?.role
-
-
-    if (!userEmail || !userRole) {
-      setMessage('Acesso não autorizado.')
-    } else {
-      localStorage.setItem('email', userEmail)
-      localStorage.setItem('role', userRole)
-      router.push('/dashboard')
-    }
 
     if (error) {
       setMessage(error.message)
+      setLoading(false)
+      return
     }
 
+    const user = data.user
+    const userEmail = user?.email
+    const userRole = data?.user?.user_metadata?.role
+    
+    if (!userEmail || !userRole) {
+      setMessage('Acesso não autorizado. Role não encontrada.')
+      setLoading(false)
+      return
+    }
+
+    localStorage.setItem('email', userEmail)
+    localStorage.setItem('role', userRole)
+
+    router.push('/dashboard')
     setLoading(false)
   }
 
