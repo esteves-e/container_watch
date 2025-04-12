@@ -28,11 +28,12 @@ export default function ContainerFormPage() {
   const [containerLocation, setContainerLocation] = useState('')
 
   useEffect(() => {
+    if (!router.isReady) return
+
     const storedRole = localStorage.getItem('role')
     const storedEmail = localStorage.getItem('email')
 
     if (!storedEmail || !isValidRole(storedRole)) {
-      // Salva URL atual para redirecionamento após login
       const fullPath = window.location.pathname + window.location.search
       localStorage.setItem('redirectAfterLogin', fullPath)
       router.replace('/login')
@@ -44,7 +45,7 @@ export default function ContainerFormPage() {
 
     if (typeof name === 'string') setContainerName(name)
     if (typeof location === 'string') setContainerLocation(location)
-  }, [router.query])
+  }, [router.isReady, name, location])
 
   const handleChange = (qid: string, value: string) => {
     setAnswers(prev => ({ ...prev, [qid]: value }))
