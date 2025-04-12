@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import QRCode from 'react-qr-code'
-import Layout from '../../components/layout'
+import Layout from '../components/layout'
 import { useRouter } from 'next/router'
 import { toPng } from 'html-to-image'
-import { supabase } from '../../lib/supabase'
+import { supabase } from '../lib/supabase'
 
 interface Container {
   id: string
@@ -103,8 +103,8 @@ export default function Dashboard() {
 
   return (
     <Layout>
-      <div className="mb-6">
-        <p className="text-sm text-gray-700 font-medium mb-2">Bem-vindo, {userEmail}</p>
+      <div className="mb-6 flex justify-between items-center">
+        <p className="text-sm text-gray-700 font-medium">Bem-vindo, {userEmail}</p>
         <button
           onClick={handleLogout}
           className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition"
@@ -113,14 +113,14 @@ export default function Dashboard() {
         </button>
       </div>
 
-      {/* Modal QR Code */}
+      {/* Modal com QR Code */}
       {selectedContainer && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-6 shadow-lg w-full max-w-sm text-center relative">
             <h2 className="text-lg font-bold mb-4">{selectedContainer.name}</h2>
             <div ref={qrRef} className="p-4 bg-white inline-block rounded">
               <QRCode
-                value={`http://localhost:3000/container/${selectedContainer.id}`}
+                value={`https://container-watch.vercel.app/containerForm?id=${selectedContainer.id}&name=${selectedContainer.name}&location=${selectedContainer.location}`}
                 size={256}
                 style={{ height: 'auto', maxWidth: '100%', width: '256px' }}
               />
@@ -144,7 +144,7 @@ export default function Dashboard() {
       )}
 
       <div className="max-w-3xl mx-auto w-full">
-        {/* Criar container */}
+        {/* Criar novo container */}
         <div className="bg-white rounded-xl shadow-md p-4 border mb-6">
           <h2 className="text-lg font-semibold mb-2">Criar novo container</h2>
           <input
@@ -184,8 +184,9 @@ export default function Dashboard() {
               <div className="flex items-center justify-between mt-3">
                 <Link
                   href={{
-                    pathname: `/container/${container.id}`,
+                    pathname: `/containerForm`,
                     query: {
+                      id: container.id,
                       name: container.name,
                       location: container.location,
                     },
@@ -200,7 +201,7 @@ export default function Dashboard() {
                     onClick={() => setSelectedContainer(container)}
                   >
                     <QRCode
-                      value={`http://localhost:3000/container/${container.id}`}
+                      value={`https://container-watch.vercel.app/containerForm?id=${container.id}&name=${container.name}&location=${container.location}`}
                       size={64}
                       style={{ height: 'auto', maxWidth: '100%', width: '64px' }}
                     />
@@ -219,7 +220,7 @@ export default function Dashboard() {
           ))}
         </div>
 
-        {/* Formulários preenchidos */}
+        {/* Lista de formulários preenchidos */}
         <div className="mt-10">
           <h2 className="text-lg font-semibold mb-3">Formulários preenchidos</h2>
           <div className="bg-white rounded-xl shadow p-4">

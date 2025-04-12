@@ -1,3 +1,5 @@
+// app.tsx
+
 import '../styles/globals.css'
 import type { AppProps } from 'next/app'
 import { createBrowserSupabaseClient } from '@supabase/auth-helpers-nextjs'
@@ -8,7 +10,10 @@ export default function App({ Component, pageProps }: AppProps) {
   const [supabaseClient] = useState(() => createBrowserSupabaseClient())
 
   return (
-    <SessionContextProvider supabaseClient={supabaseClient} initialSession={pageProps.initialSession}>
+    <SessionContextProvider
+      supabaseClient={supabaseClient}
+      initialSession={pageProps.initialSession}
+    >
       <Component {...pageProps} />
     </SessionContextProvider>
   )

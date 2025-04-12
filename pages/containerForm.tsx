@@ -1,6 +1,6 @@
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
-import { supabase } from '../../lib/supabase'
+import { supabase } from '../lib/supabase'
 
 type Role = 'tecnico' | 'auditor' | 'gerente'
 
@@ -44,6 +44,10 @@ export default function ContainerPage() {
   }
 
   const handleSubmit = async () => {
+    if (Object.keys(answers).length === 0) {
+      return alert('Preencha o formulário antes de enviar.')
+    }
+
     const { error } = await supabase.from('form_responses').insert({
       container_id: id,
       container_name: containerName,
@@ -63,6 +67,10 @@ export default function ContainerPage() {
   }
 
   const handleAuditorSubmit = async () => {
+    if (!auditorComment.trim()) {
+      return alert('Insira um comentário antes de enviar.')
+    }
+
     const { error } = await supabase.from('form_responses').insert({
       container_id: id,
       container_name: containerName,
@@ -80,6 +88,12 @@ export default function ContainerPage() {
       router.push('/dashboard')
     }
   }
+
+  const handleClearForm = () => {
+    setAnswers({})
+  }
+
+  if (!id || typeof id !== 'string') return null
 
   return (
     <div className="p-4 max-w-2xl mx-auto">
@@ -102,6 +116,7 @@ export default function ContainerPage() {
                     <button
                       key={val}
                       type="button"
+                      aria-pressed={answers[q.id] === val}
                       onClick={() => handleChange(q.id, val)}
                       className={`px-4 py-2 rounded border 
                         ${answers[q.id] === val ? 'bg-blue-600 text-white' : 'bg-white text-black'}`}
@@ -113,11 +128,13 @@ export default function ContainerPage() {
               ) : q.type === 'number' ? (
                 <input
                   type="number"
+                  value={answers[q.id] || ''}
                   className="border border-gray-300 p-2 w-full rounded mt-2"
                   onChange={(e) => handleChange(q.id, e.target.value)}
                 />
               ) : (
                 <textarea
+                  value={answers[q.id] || ''}
                   className="border border-gray-300 p-2 w-full rounded mt-2"
                   rows={2}
                   onChange={(e) => handleChange(q.id, e.target.value)}
@@ -135,7 +152,14 @@ export default function ContainerPage() {
         )}
 
         {(role === 'tecnico' || role === 'gerente') && (
-          <div className="text-right">
+          <div className="flex justify-end gap-4 mt-4">
+            <button
+              type="button"
+              onClick={handleClearForm}
+              className="bg-gray-300 text-black px-6 py-3 rounded hover:bg-gray-400 transition"
+            >
+              Limpar formulário
+            </button>
             <button
               type="button"
               onClick={handleSubmit}

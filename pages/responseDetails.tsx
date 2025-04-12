@@ -1,7 +1,7 @@
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
-import { supabase } from '../../../lib/supabase'
-import Layout from '../../../components/layout'
+import { supabase } from '../lib/supabase'
+import Layout from '../components/layout'
 
 const mockForm = [
   { id: 'q1', label: 'Equipamento está funcionando corretamente?' },
