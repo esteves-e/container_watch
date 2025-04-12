@@ -28,8 +28,6 @@ export default function ContainerFormPage() {
   const [containerLocation, setContainerLocation] = useState('')
 
   useEffect(() => {
-    if (!router.isReady) return
-
     const storedRole = localStorage.getItem('role')
     const storedEmail = localStorage.getItem('email')
 
@@ -45,7 +43,7 @@ export default function ContainerFormPage() {
 
     if (typeof name === 'string') setContainerName(name)
     if (typeof location === 'string') setContainerLocation(location)
-  }, [router.isReady, name, location])
+  }, [router.query])
 
   const handleChange = (qid: string, value: string) => {
     setAnswers(prev => ({ ...prev, [qid]: value }))
@@ -72,7 +70,7 @@ export default function ContainerFormPage() {
       alert('Erro ao salvar: ' + error.message)
     } else {
       alert('Formulário enviado com sucesso!')
-      router.push('/containers')
+      router.push('/dashboard')
     }
   }
 
@@ -95,7 +93,7 @@ export default function ContainerFormPage() {
       alert('Erro ao salvar comentário: ' + error.message)
     } else {
       alert('Comentário enviado com sucesso!')
-      router.push('/containers')
+      router.push('/dashboard')
     }
   }
 
