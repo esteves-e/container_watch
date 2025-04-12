@@ -5,6 +5,7 @@ import Layout from '../components/layout'
 import { useRouter } from 'next/router'
 import { toPng } from 'html-to-image'
 import { supabase } from '../lib/supabase'
+import { Role } from '../lib/roles'
 
 interface Container {
   id: string
@@ -17,7 +18,7 @@ export default function Dashboard() {
   const [formResponses, setFormResponses] = useState<any[]>([])
   const [name, setName] = useState('')
   const [location, setLocation] = useState('')
-  const [role, setRole] = useState<string | null>(null)
+  const [role, setRole] = useState<Role | null>(null)
   const [selectedContainer, setSelectedContainer] = useState<Container | null>(null)
   const qrRef = useRef(null)
   const router = useRouter()
@@ -26,9 +27,9 @@ export default function Dashboard() {
 
   useEffect(() => {
     const email = localStorage.getItem('email')
-    const role = localStorage.getItem('role')
+    const role = localStorage.getItem('role') as Role | null
 
-    if (!email || !role || role !== 'gerente') {
+    if (!email || role !== 'gerente') {
       router.push('/login')
       return
     }
@@ -120,6 +121,7 @@ export default function Dashboard() {
         </button>
       </div>
 
+      {/* Modal de QR Code */}
       {selectedContainer && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-6 shadow-lg w-full max-w-sm text-center relative">
@@ -149,6 +151,7 @@ export default function Dashboard() {
         </div>
       )}
 
+      {/* Containers */}
       <div className="max-w-3xl mx-auto w-full">
         <div className="bg-white rounded-xl shadow-md p-4 border mb-6">
           <h2 className="text-lg font-semibold mb-2">Criar novo container</h2>
@@ -174,6 +177,7 @@ export default function Dashboard() {
           </button>
         </div>
 
+        {/* Lista */}
         <h2 className="text-lg font-semibold mb-3">Containers cadastrados</h2>
         <div className="space-y-4">
           {containers.map(container => (
@@ -224,6 +228,7 @@ export default function Dashboard() {
           ))}
         </div>
 
+        {/* Respostas */}
         <div className="mt-10">
           <h2 className="text-lg font-semibold mb-3">Formulários preenchidos</h2>
           <div className="bg-white rounded-xl shadow p-4">
