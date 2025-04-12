@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/router'
 import { supabase } from '../lib/supabase'
-import { validRoles, invalidRoleMessage, Role } from '../lib/roles'
+import { isValidRole } from '../lib/roles'
 
 export default function Login() {
   const [email, setEmail] = useState('')
@@ -44,18 +44,28 @@ export default function Login() {
 
     const user = data.user
     const userEmail = user?.email
-    const userRole = user?.user_metadata?.role as Role | undefined
+    const userRole = user?.user_metadata?.role
 
-    if (!userEmail || !userRole || !validRoles.includes(userRole)) {
-      setMessage(invalidRoleMessage)
+    if (!userEmail || !isValidRole(userRole)) {
+      setMessage('Acesso não autorizado. Role não encontrada.')
       setLoading(false)
       return
     }
 
+    // Armazena localmente para uso em toda a app
     localStorage.setItem('email', userEmail)
     localStorage.setItem('role', userRole)
 
-    router.push(userRole === 'gerente' ? '/dashboard' : '/containers')
+    // Se houver URL salva (como em login via QR), redireciona para ela
+    const redirectAfterLogin = localStorage.getItem('redirectAfterLogin')
+    if (redirectAfterLogin) {
+      localStorage.removeItem('redirectAfterLogin')
+      router.replace(redirectAfterLogin)
+    } else {
+      // Caso contrário, redireciona com base na role
+      router.replace(userRole === 'gerente' ? '/dashboard' : '/containers')
+    }
+
     setLoading(false)
   }
 
