@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { supabase } from '../lib/supabase'
 import { useRouter } from 'next/router'
+import { supabase } from '../lib/supabase'
 
 export default function Login() {
   const [email, setEmail] = useState('')
@@ -14,12 +14,14 @@ export default function Login() {
     setLoading(true)
     setMessage('')
     const { error } = await supabase.auth.signInWithOtp({ email })
+
     if (error) {
       setMessage(error.message)
     } else {
       setStep('verify')
       setMessage('Código enviado! Verifique seu e-mail.')
     }
+
     setLoading(false)
   }
 
@@ -41,10 +43,7 @@ export default function Login() {
 
     const user = data.user
     const userEmail = user?.email
-
-    const userRole =
-      user?.user_metadata?.role ||
-      (user?.user_metadata as any)?.role
+    const userRole = user?.user_metadata?.role
 
     if (!userEmail || !userRole) {
       setMessage('Acesso não autorizado. Role não encontrada.')
@@ -55,7 +54,12 @@ export default function Login() {
     localStorage.setItem('email', userEmail)
     localStorage.setItem('role', userRole)
 
-    router.push('/dashboard')
+    if (userRole === 'gerente') {
+      router.push('/dashboard')
+    } else {
+      router.push('/containers')
+    }
+
     setLoading(false)
   }
 
