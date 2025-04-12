@@ -1,43 +1,46 @@
 // pages/index.tsx
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/router'
+import { GetServerSidePropsContext } from 'next'
+import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs'
+
+export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
+  const supabase = createServerSupabaseClient(ctx)
+  const { data: { session } } = await supabase.auth.getSession()
+
+  if (!session || !session.user) {
+    return {
+      redirect: {
+        destination: '/login',
+        permanent: false,
+      },
+    }
+  }
+
+  const role = session.user.user_metadata?.role
+
+  if (role === 'gerente') {
+    return {
+      redirect: {
+        destination: '/dashboard',
+        permanent: false,
+      },
+    }
+  } else if (role === 'tecnico' || role === 'auditor') {
+    return {
+      redirect: {
+        destination: '/containers',
+        permanent: false,
+      },
+    }
+  } else {
+    return {
+      redirect: {
+        destination: '/login',
+        permanent: false,
+      },
+    }
+  }
+}
 
 export default function Home() {
-  const router = useRouter()
-  const [checking, setChecking] = useState(true)
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-
-    const email = localStorage.getItem('email')
-    const role = localStorage.getItem('role')
-
-    // Redireciona caso não esteja autenticado
-    if (!email || !role) {
-      router.replace('/login')
-      return
-    }
-
-    // Redireciona baseado na role
-    switch (role) {
-      case 'gerente':
-        router.replace('/dashboard')
-        break
-      case 'tecnico':
-      case 'auditor':
-        router.replace('/containers')
-        break
-      default:
-        router.replace('/login')
-        break
-    }
-
-    setChecking(false)
-  }, [router])
-
-  return checking ? (
-    <div className="h-screen flex items-center justify-center">
-      <p className="text-gray-600 text-sm">Redirecionando...</p>
-    </div>
-  ) : null
+  return null
 }
