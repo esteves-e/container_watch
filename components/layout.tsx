@@ -7,8 +7,9 @@ interface Props {
 
 export default function Layout({ children }: Props) {
   return (
-    <div className="flex min-h-screen bg-gray-100">
-      <aside className="w-64 bg-blue-800 text-white flex flex-col p-6 space-y-6">
+    <div className="min-h-screen bg-gray-100 flex flex-col md:flex-row">
+      {/* Menu lateral visível em telas médias pra cima */}
+      <aside className="hidden md:flex md:w-64 bg-blue-800 text-white flex-col p-6 space-y-6">
         <div>
           <h1 className="text-2xl font-bold">Container Watch</h1>
           <p className="text-xs text-blue-200">Painel Administrativo</p>
@@ -20,8 +21,8 @@ export default function Layout({ children }: Props) {
         </nav>
       </aside>
 
-      <main className="flex-1 p-8 overflow-y-auto">{children}</main>
+      {/* Conteúdo principal se adapta ao tamanho da tela */}
+      <main className="flex-1 p-4 md:p-8 overflow-y-auto">{children}</main>
     </div>
-    
   )
 }
