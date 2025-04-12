@@ -22,44 +22,46 @@ export default function Dashboard() {
   const qrRef = useRef(null)
   const router = useRouter()
   const [userEmail, setUserEmail] = useState<string | null>(null)
+  const [qrUrl, setQrUrl] = useState('')
 
   useEffect(() => {
     const email = localStorage.getItem('email')
     const role = localStorage.getItem('role')
-  
-    // Proteção de rota
+
     if (!email || !role || role !== 'gerente') {
       router.push('/login')
       return
     }
-  
+
     setUserEmail(email)
     setRole(role)
-  
-    // Carregar containers salvos localmente
+
     const storedContainers = localStorage.getItem('containers')
     if (storedContainers) {
       setContainers(JSON.parse(storedContainers))
     }
-  
-    // Buscar formulários preenchidos
+
     const fetchForms = async () => {
       const { data, error } = await supabase
         .from('form_responses')
         .select('*')
         .order('created_at', { ascending: false })
-  
+
       if (!error && data) setFormResponses(data)
     }
-  
+
     fetchForms()
-  }, [])
-  
-  // Salvar containers sempre que forem atualizados
+  }, [router])
+
   useEffect(() => {
     localStorage.setItem('containers', JSON.stringify(containers))
   }, [containers])
-  
+
+  useEffect(() => {
+    if (selectedContainer && typeof window !== 'undefined') {
+      setQrUrl(`${window.location.origin}/containerForm?id=${selectedContainer.id}&name=${selectedContainer.name}&location=${selectedContainer.location}`)
+    }
+  }, [selectedContainer])
 
   const handleAddContainer = () => {
     if (!name) return alert('Nome é obrigatório!')
@@ -114,14 +116,13 @@ export default function Dashboard() {
         </button>
       </div>
 
-      {/* Modal com QR Code */}
       {selectedContainer && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-6 shadow-lg w-full max-w-sm text-center relative">
             <h2 className="text-lg font-bold mb-4">{selectedContainer.name}</h2>
             <div ref={qrRef} className="p-4 bg-white inline-block rounded">
               <QRCode
-                value={`https://container-watch.vercel.app/containerForm?id=${selectedContainer.id}&name=${selectedContainer.name}&location=${selectedContainer.location}`}
+                value={qrUrl}
                 size={256}
                 style={{ height: 'auto', maxWidth: '100%', width: '256px' }}
               />
@@ -145,7 +146,6 @@ export default function Dashboard() {
       )}
 
       <div className="max-w-3xl mx-auto w-full">
-        {/* Criar novo container */}
         <div className="bg-white rounded-xl shadow-md p-4 border mb-6">
           <h2 className="text-lg font-semibold mb-2">Criar novo container</h2>
           <input
@@ -170,7 +170,6 @@ export default function Dashboard() {
           </button>
         </div>
 
-        {/* Lista de containers */}
         <h2 className="text-lg font-semibold mb-3">Containers cadastrados</h2>
         <div className="space-y-4">
           {containers.map(container => (
@@ -202,7 +201,7 @@ export default function Dashboard() {
                     onClick={() => setSelectedContainer(container)}
                   >
                     <QRCode
-                      value={`https://container-watch.vercel.app/containerForm?id=${container.id}&name=${container.name}&location=${container.location}`}
+                      value={`${window.location.origin}/containerForm?id=${container.id}&name=${container.name}&location=${container.location}`}
                       size={64}
                       style={{ height: 'auto', maxWidth: '100%', width: '64px' }}
                     />
@@ -221,7 +220,6 @@ export default function Dashboard() {
           ))}
         </div>
 
-        {/* Lista de formulários preenchidos */}
         <div className="mt-10">
           <h2 className="text-lg font-semibold mb-3">Formulários preenchidos</h2>
           <div className="bg-white rounded-xl shadow p-4">
