@@ -1,15 +1,18 @@
 // pages/index.tsx
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 
 export default function Home() {
   const router = useRouter()
+  const [checking, setChecking] = useState(true)
 
   useEffect(() => {
+    if (typeof window === 'undefined') return
+
     const email = localStorage.getItem('email')
     const role = localStorage.getItem('role')
 
-    // Se não estiver autenticado, redireciona para o login
+    // Redireciona caso não esteja autenticado
     if (!email || !role) {
       router.replace('/login')
       return
@@ -28,7 +31,13 @@ export default function Home() {
         router.replace('/login')
         break
     }
+
+    setChecking(false)
   }, [router])
 
-  return null // Não renderiza nada enquanto redireciona
+  return checking ? (
+    <div className="h-screen flex items-center justify-center">
+      <p className="text-gray-600 text-sm">Redirecionando...</p>
+    </div>
+  ) : null
 }
