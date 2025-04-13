@@ -1,12 +1,16 @@
 // pages/index.tsx
 import { GetServerSidePropsContext } from 'next'
 import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs'
+import { validRoles, Role } from '../lib/roles'
 
 export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
   const supabase = createServerSupabaseClient(ctx)
-  const { data: { session } } = await supabase.auth.getSession()
+  const {
+    data: { session },
+  } = await supabase.auth.getSession()
 
-  if (!session || !session.user) {
+  // Se não estiver autenticado, redireciona para o login
+  if (!session?.user) {
     return {
       redirect: {
         destination: '/login',
@@ -15,29 +19,26 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     }
   }
 
-  const role = session.user.user_metadata?.role
+  const role = session.user.user_metadata?.role as Role | undefined
 
-  if (role === 'gerente') {
-    return {
-      redirect: {
-        destination: '/dashboard',
-        permanent: false,
-      },
-    }
-  } else if (role === 'tecnico' || role === 'auditor') {
-    return {
-      redirect: {
-        destination: '/containers',
-        permanent: false,
-      },
-    }
-  } else {
+  if (!role || !validRoles.includes(role)) {
     return {
       redirect: {
         destination: '/login',
         permanent: false,
       },
     }
+  }
+
+  // Redireciona conforme a role
+  const destination =
+    role === 'gerente' ? '/dashboard' : '/containers'
+
+  return {
+    redirect: {
+      destination,
+      permanent: false,
+    },
   }
 }
 
