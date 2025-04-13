@@ -11,6 +11,7 @@ interface Container {
   id: string
   name: string
   location: string
+  form_type: string
 }
 
 export default function Dashboard() {
@@ -18,6 +19,7 @@ export default function Dashboard() {
   const [formResponses, setFormResponses] = useState<any[]>([])
   const [name, setName] = useState('')
   const [location, setLocation] = useState('')
+  const [formType, setFormType] = useState('containerForm')
   const [role, setRole] = useState<Role | null>(null)
   const [selectedContainer, setSelectedContainer] = useState<Container | null>(null)
   const qrRef = useRef(null)
@@ -60,7 +62,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (selectedContainer && typeof window !== 'undefined') {
-      const url = new URL('/containerForm', window.location.origin)
+      const url = new URL(`/${selectedContainer.form_type}`, window.location.origin)
       url.searchParams.set('id', selectedContainer.id)
       url.searchParams.set('name', selectedContainer.name)
       url.searchParams.set('location', selectedContainer.location)
@@ -74,6 +76,7 @@ export default function Dashboard() {
     const { error } = await supabase.from('containers').insert({
       name,
       location,
+      form_type: formType,
       created_by: userEmail,
     })
 
@@ -84,6 +87,7 @@ export default function Dashboard() {
 
     setName('')
     setLocation('')
+    setFormType('containerForm')
     fetchContainers()
   }
 
@@ -174,6 +178,16 @@ export default function Dashboard() {
             onChange={e => setLocation(e.target.value)}
             className="border p-2 w-full rounded mb-2"
           />
+          <select
+            value={formType}
+            onChange={(e) => setFormType(e.target.value)}
+            className="border p-2 rounded w-full mb-2"
+          >
+            <option value="containerForm">Checklist Container</option>
+            <option value="execucaoManutencao">Plano de Manutenção</option>
+            <option value="inspecaoVeiculo">Inspeção de Veículo</option>
+            <option value="inspecaoEmbarcacao">Inspeção de Embarcação</option>
+          </select>
           <button
             className="bg-blue-600 text-white px-4 py-2 rounded w-full hover:bg-blue-700"
             onClick={handleAddContainer}
@@ -196,7 +210,7 @@ export default function Dashboard() {
               <div className="flex items-center justify-between mt-3">
                 <Link
                   href={{
-                    pathname: `/containerForm`,
+                    pathname: `/${container.form_type}`,
                     query: {
                       id: container.id,
                       name: container.name,
@@ -213,7 +227,7 @@ export default function Dashboard() {
                     onClick={() => setSelectedContainer(container)}
                   >
                     <QRCode
-                      value={`${window.location.origin}/containerForm?id=${container.id}&name=${container.name}&location=${container.location}`}
+                      value={`${window.location.origin}/${container.form_type}?id=${container.id}&name=${container.name}&location=${container.location}`}
                       size={64}
                       style={{ height: 'auto', maxWidth: '100%', width: '64px' }}
                     />
