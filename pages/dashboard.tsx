@@ -1,17 +1,17 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import QRCode from 'react-qr-code'
-import Layout from '../components/layout'
+import Layout from './layout'
 import { useRouter } from 'next/router'
 import { toPng } from 'html-to-image'
 import { supabase } from '../lib/supabase'
-import { Role } from '../lib/roles'
+import React from 'react'
+
 
 interface Container {
   id: string
   name: string
   location: string
-  form_type: string
 }
 
 export default function Dashboard() {
@@ -19,88 +19,64 @@ export default function Dashboard() {
   const [formResponses, setFormResponses] = useState<any[]>([])
   const [name, setName] = useState('')
   const [location, setLocation] = useState('')
-  const [formType, setFormType] = useState('containerForm')
-  const [role, setRole] = useState<Role | null>(null)
+  const [role, setRole] = useState<string | null>(null)
   const [selectedContainer, setSelectedContainer] = useState<Container | null>(null)
   const qrRef = useRef(null)
   const router = useRouter()
   const [userEmail, setUserEmail] = useState<string | null>(null)
-  const [qrUrl, setQrUrl] = useState('')
 
   useEffect(() => {
     const email = localStorage.getItem('email')
-    const role = localStorage.getItem('role') as Role | null
-
-    if (!email || role !== 'gerente') {
-      router.push('/login')
-      return
-    }
-
     setUserEmail(email)
-    setRole(role)
-    fetchContainers()
-    fetchForms()
-  }, [router])
-
-  const fetchContainers = async () => {
-    const { data, error } = await supabase
-      .from('containers')
-      .select('*')
-      .order('created_at', { ascending: false })
-
-    if (!error && data) setContainers(data)
-  }
-
-  const fetchForms = async () => {
-    const { data, error } = await supabase
-      .from('form_responses')
-      .select('*')
-      .order('created_at', { ascending: false })
-
-    if (!error && data) setFormResponses(data)
-  }
+  }, [])
 
   useEffect(() => {
-    if (selectedContainer && typeof window !== 'undefined') {
-      const url = new URL(`/${selectedContainer.form_type}`, window.location.origin)
-      url.searchParams.set('id', selectedContainer.id)
-      url.searchParams.set('name', selectedContainer.name)
-      url.searchParams.set('location', selectedContainer.location)
-      setQrUrl(url.toString())
+    const r = localStorage.getItem('role')
+    if (r) setRole(r)
+  }, [])
+
+  useEffect(() => {
+    const r = localStorage.getItem('role')
+    if (r !== 'gerente') {
+      router.push('/login')
     }
-  }, [selectedContainer])
+    setRole(r as any)
+  }, [])
 
-  const handleAddContainer = async () => {
+  useEffect(() => {
+    const stored = localStorage.getItem('containers')
+    if (stored) {
+      setContainers(JSON.parse(stored))
+    }
+  }, [])
+
+  useEffect(() => {
+    localStorage.setItem('containers', JSON.stringify(containers))
+  }, [containers])
+
+  useEffect(() => {
+    const fetchForms = async () => {
+      const { data, error } = await supabase
+        .from('form_responses')
+        .select('*')
+        .order('created_at', { ascending: false })
+
+      if (!error && data) setFormResponses(data)
+    }
+
+    fetchForms()
+  }, [])
+
+  const handleAddContainer = () => {
     if (!name) return alert('Nome é obrigatório!')
-
-    const { error } = await supabase.from('containers').insert({
+    const newContainer: Container = {
+      id: Math.random().toString(36).substring(2, 10),
       name,
       location,
-      form_type: formType,
-      created_by: userEmail,
-    })
-
-    if (error) {
-      alert('Erro ao adicionar container: ' + error.message)
-      return
     }
-
+    setContainers(prev => [...prev, newContainer])
     setName('')
     setLocation('')
-    setFormType('containerForm')
-    fetchContainers()
-  }
-
-  const handleDeleteResponse = async (id: string) => {
-    const confirm = window.confirm('Deseja realmente excluir este formulário?')
-    if (!confirm) return
-
-    const { error } = await supabase.from('form_responses').delete().eq('id', id)
-    if (!error) {
-      setFormResponses(prev => prev.filter(resp => resp.id !== id))
-    } else {
-      alert('Erro ao excluir: ' + error.message)
-    }
   }
 
   const handleDownload = () => {
@@ -122,8 +98,8 @@ export default function Dashboard() {
 
   return (
     <Layout>
-      <div className="mb-6 flex justify-between items-center">
-        <p className="text-sm text-gray-700 font-medium">Bem-vindo, {userEmail}</p>
+      <div className="mb-6">
+        <p className="text-sm text-gray-700 font-medium mb-2">Bem-vindo, {userEmail}</p>
         <button
           onClick={handleLogout}
           className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition"
@@ -132,13 +108,14 @@ export default function Dashboard() {
         </button>
       </div>
 
+      {/* Modal com QR Code grande */}
       {selectedContainer && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-6 shadow-lg w-full max-w-sm text-center relative">
             <h2 className="text-lg font-bold mb-4">{selectedContainer.name}</h2>
             <div ref={qrRef} className="p-4 bg-white inline-block rounded">
               <QRCode
-                value={qrUrl}
+                value={`http://localhost:3000/container/${selectedContainer.id}`}
                 size={256}
                 style={{ height: 'auto', maxWidth: '100%', width: '256px' }}
               />
@@ -161,6 +138,7 @@ export default function Dashboard() {
         </div>
       )}
 
+      {/* Bloco de criação de containers */}
       <div className="max-w-3xl mx-auto w-full">
         <div className="bg-white rounded-xl shadow-md p-4 border mb-6">
           <h2 className="text-lg font-semibold mb-2">Criar novo container</h2>
@@ -178,16 +156,6 @@ export default function Dashboard() {
             onChange={e => setLocation(e.target.value)}
             className="border p-2 w-full rounded mb-2"
           />
-          <select
-            value={formType}
-            onChange={(e) => setFormType(e.target.value)}
-            className="border p-2 rounded w-full mb-2"
-          >
-            <option value="containerForm">Checklist Container</option>
-            <option value="execucaoManutencao">Plano de Manutenção</option>
-            <option value="inspecaoVeiculo">Inspeção de Veículo</option>
-            <option value="inspecaoEmbarcacao">Inspeção de Embarcação</option>
-          </select>
           <button
             className="bg-blue-600 text-white px-4 py-2 rounded w-full hover:bg-blue-700"
             onClick={handleAddContainer}
@@ -196,56 +164,62 @@ export default function Dashboard() {
           </button>
         </div>
 
-        <h2 className="text-lg font-semibold mb-3">Containers cadastrados</h2>
-        <div className="space-y-4">
-          {containers.map(container => (
-            <div
-              key={container.id}
-              className="border rounded-xl p-4 shadow-sm bg-white"
-            >
-              <h3 className="text-md font-bold">{container.name}</h3>
-              {container.location && (
-                <p className="text-sm text-gray-600">Local: {container.location}</p>
-              )}
-              <div className="flex items-center justify-between mt-3">
-                <Link
-                  href={{
-                    pathname: `/${container.form_type}`,
-                    query: {
-                      id: container.id,
-                      name: container.name,
-                      location: container.location,
-                    },
-                  }}
-                  className="text-blue-600 underline text-sm"
-                >
-                  Acessar formulário
-                </Link>
-                <div className="flex items-center gap-3">
-                  <div
-                    className="cursor-pointer"
-                    onClick={() => setSelectedContainer(container)}
+        {/* Lista de containers */}
+        <div>
+          <h2 className="text-lg font-semibold mb-3">Containers cadastrados</h2>
+          <div className="space-y-4">
+            {containers.map(container => (
+              <div
+                key={container.id}
+                className="border rounded-xl p-4 shadow-sm bg-white"
+              >
+                <h3 className="text-md font-bold">{container.name}</h3>
+                {container.location && (
+                  <p className="text-sm text-gray-600">Local: {container.location}</p>
+                )}
+                <div className="flex items-center justify-between mt-3">
+                  <Link
+                    href={{
+                      pathname: `/container/${container.id}`,
+                      query: {
+                        name: container.name,
+                        location: container.location,
+                      },
+                    }}
+                    className="text-blue-600 underline text-sm"
                   >
-                    <QRCode
-                      value={`${window.location.origin}/${container.form_type}?id=${container.id}&name=${container.name}&location=${container.location}`}
-                      size={64}
-                      style={{ height: 'auto', maxWidth: '100%', width: '64px' }}
-                    />
+                    Acessar formulário
+                  </Link>
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="cursor-pointer"
+                      onClick={() => setSelectedContainer(container)}
+                    >
+                      <QRCode
+                        value={`http://localhost:3000/container/${container.id}`}
+                        size={64}
+                        style={{ height: 'auto', maxWidth: '100%', width: '64px' }}
+                      />
+                    </div>
+
+                    {role === 'gerente' && (
+                      <button
+                        onClick={() =>
+                          setContainers(containers.filter((c) => c.id !== container.id))
+                        }
+                        className="text-red-600 text-sm underline"
+                      >
+                        Excluir
+                      </button>
+                    )}
                   </div>
-                  <button
-                    onClick={() =>
-                      setContainers(containers.filter((c) => c.id !== container.id))
-                    }
-                    className="text-red-600 text-sm underline"
-                  >
-                    Excluir
-                  </button>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
 
+        {/* Lista de formulários preenchidos */}
         <div className="mt-10">
           <h2 className="text-lg font-semibold mb-3">Formulários preenchidos</h2>
           <div className="bg-white rounded-xl shadow p-4">
@@ -261,20 +235,12 @@ export default function Dashboard() {
                         Por: {resp.email} • {new Date(resp.created_at).toLocaleString()} • {resp.role}
                       </p>
                     </div>
-                    <div className="flex gap-4 items-center">
-                      <Link
-                        href={`/dashboard/respostas/${resp.id}`}
-                        className="text-blue-600 text-sm hover:underline"
-                      >
-                        Ver detalhes
-                      </Link>
-                      <button
-                        onClick={() => handleDeleteResponse(resp.id)}
-                        className="text-red-600 text-sm hover:underline"
-                      >
-                        Excluir
-                      </button>
-                    </div>
+                    <Link
+                      href={`/dashboard/respostas/${resp.id}`}
+                      className="text-blue-600 text-sm hover:underline"
+                    >
+                      Ver detalhes
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -285,3 +251,20 @@ export default function Dashboard() {
     </Layout>
   )
 }
+
+
+const handleDeleteContainer = async (id: string) => {
+  const confirmed = window.confirm("Deseja realmente excluir este container?")
+  if (!confirmed) return
+
+  const { error } = await supabase.from('containers').delete().eq('id', id)
+  if (error) {
+    alert("Erro ao excluir: " + error.message)
+    return
+  }
+
+  setContainers(prev => prev.filter(c => c.id !== id))
+}
+
+
+
