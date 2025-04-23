@@ -102,7 +102,7 @@ export default function ContainerFormPage() {
   if (!id || typeof id !== 'string') return null
 
   
-  const handleSubmit = async () => {
+  const validateBeforeSubmit = async () => {
     if (!email) return alert("Usuário não autenticado.")
 
     const { data, error } = await supabase.from('form_responses').insert([
@@ -192,7 +192,7 @@ return (
             </button>
             <button
               type="button"
-              onClick={handleSubmit}
+              onClick={validateBeforeSubmit}
               className="bg-blue-600 text-white px-6 py-3 rounded hover:bg-blue-700 transition"
             >
               Finalizar Formulário
