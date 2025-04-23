@@ -7,7 +7,6 @@ import { toPng } from 'html-to-image'
 import { supabase } from '../lib/supabase'
 import React from 'react'
 
-
 interface Container {
   id: string
   name: string
@@ -77,6 +76,19 @@ export default function Dashboard() {
     setContainers(prev => [...prev, newContainer])
     setName('')
     setLocation('')
+  }
+
+  const handleDeleteContainer = async (id: string) => {
+    const confirmed = window.confirm("Deseja realmente excluir este container?")
+    if (!confirmed) return
+
+    const { error } = await supabase.from('containers').delete().eq('id', id)
+    if (error) {
+      alert("Erro ao excluir: " + error.message)
+      return
+    }
+
+    setContainers(prev => prev.filter(c => c.id !== id))
   }
 
   const handleDownload = () => {
@@ -204,9 +216,7 @@ export default function Dashboard() {
 
                     {role === 'gerente' && (
                       <button
-                        onClick={() =>
-                          setContainers(containers.filter((c) => c.id !== container.id))
-                        }
+                        onClick={() => handleDeleteContainer(container.id)}
                         className="text-red-600 text-sm underline"
                       >
                         Excluir
@@ -251,20 +261,3 @@ export default function Dashboard() {
     </Layout>
   )
 }
-
-
-const handleDeleteContainer = async (id: string) => {
-  const confirmed = window.confirm("Deseja realmente excluir este container?")
-  if (!confirmed) return
-
-  const { error } = await supabase.from('containers').delete().eq('id', id)
-  if (error) {
-    alert("Erro ao excluir: " + error.message)
-    return
-  }
-
-  setContainers(prev => prev.filter(c => c.id !== id))
-}
-
-
-
