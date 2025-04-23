@@ -101,32 +101,7 @@ export default function ContainerFormPage() {
 
   if (!id || typeof id !== 'string') return null
 
-  
-  const handleSubmit = async () => {
-    if (!email) return alert("Usuário não autenticado.")
-
-    const { data, error } = await supabase.from('form_responses').insert([
-      {
-        container_id: id,
-        container_name: containerName,
-        container_location: containerLocation,
-        answers,
-        submitted_by: email,
-        created_at: new Date().toISOString(),
-      }
-    ])
-
-    if (error) {
-      console.error(error)
-      alert("Erro ao enviar formulário.")
-    } else {
-      alert("Formulário enviado com sucesso!")
-      router.push('/models') // redireciona após envio
-    }
-  }
-
-
-return (
+  return (
     <div className="p-4 max-w-2xl mx-auto">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-blue-700">Checklist do Container</h1>
