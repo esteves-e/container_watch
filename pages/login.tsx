@@ -1,4 +1,3 @@
-
 import { useState } from 'react'
 import { useRouter } from 'next/router'
 import { supabase } from '../lib/supabase'
@@ -24,6 +23,21 @@ export default function LoginPage() {
       localStorage.setItem('email', email)
       localStorage.setItem('role', data.user.user_metadata?.role || 'tecnico')
       router.push('/dashboard')
+    }
+  }
+
+  const handleForgotPassword = async () => {
+    const inputEmail = prompt('Digite seu e-mail para redefinir a senha:')
+    if (!inputEmail) return
+
+    const { error } = await supabase.auth.resetPasswordForEmail(inputEmail, {
+      redirectTo: `${window.location.origin}/reset-password`
+    })
+
+    if (error) {
+      alert('Erro ao enviar e-mail de recuperação: ' + error.message)
+    } else {
+      alert('E-mail de recuperação enviado! Verifique sua caixa de entrada.')
     }
   }
 
@@ -58,6 +72,13 @@ export default function LoginPage() {
         >
           Entrar
         </button>
+
+        <p
+          className="text-sm text-blue-600 text-center mt-4 cursor-pointer hover:underline"
+          onClick={handleForgotPassword}
+        >
+          Esqueceu sua senha?
+        </p>
       </form>
     </div>
   )
