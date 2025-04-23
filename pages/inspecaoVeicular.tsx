@@ -152,3 +152,5 @@ export default function InspecaoVeicularPage() {
     </div>
   )
 }
+export {} // força o TypeScript a tratar como módulo
+
