@@ -1,121 +1,64 @@
+
 import { useState } from 'react'
 import { useRouter } from 'next/router'
 import { supabase } from '../lib/supabase'
-import { isValidRole } from '../lib/roles'
 
-export default function Login() {
+export default function LoginPage() {
   const [email, setEmail] = useState('')
-  const [otp, setOtp] = useState('')
-  const [step, setStep] = useState<'login' | 'verify'>('login')
-  const [loading, setLoading] = useState(false)
-  const [message, setMessage] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
   const router = useRouter()
 
-  const handleSendOtp = async () => {
-    setLoading(true)
-    setMessage('')
-    const { error } = await supabase.auth.signInWithOtp({ email })
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError('')
 
-    if (error) {
-      setMessage(error.message)
-    } else {
-      setStep('verify')
-      setMessage('Código enviado! Verifique seu e-mail.')
-    }
-
-    setLoading(false)
-  }
-
-  const handleVerifyOtp = async () => {
-    setLoading(true)
-    setMessage('')
-
-    const { data, error } = await supabase.auth.verifyOtp({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
-      token: otp,
-      type: 'email',
+      password,
     })
 
     if (error) {
-      setMessage(error.message)
-      setLoading(false)
-      return
-    }
-
-    const user = data.user
-    const userEmail = user?.email
-    const userRole = user?.user_metadata?.role
-
-    if (!userEmail || !isValidRole(userRole)) {
-      setMessage('Acesso não autorizado. Role não encontrada.')
-      setLoading(false)
-      return
-    }
-
-    // Armazena localmente para uso em toda a app
-    localStorage.setItem('email', userEmail)
-    localStorage.setItem('role', userRole)
-
-    // Se houver URL salva (como em login via QR), redireciona para ela
-    const redirectAfterLogin = localStorage.getItem('redirectAfterLogin')
-    if (redirectAfterLogin) {
-      localStorage.removeItem('redirectAfterLogin')
-      router.replace(redirectAfterLogin)
+      setError(error.message)
     } else {
-      // Caso contrário, redireciona com base na role
-      router.replace(userRole === 'gerente' ? '/dashboard' : '/containers')
+      localStorage.setItem('email', email)
+      localStorage.setItem('role', data.user.user_metadata?.role || 'tecnico')
+      router.push('/dashboard')
     }
-
-    setLoading(false)
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
-      <div className="bg-white p-6 rounded-xl shadow-md w-full max-w-sm space-y-4">
-        <h1 className="text-xl font-bold text-center">Login com código</h1>
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <form onSubmit={handleLogin} className="bg-white p-6 rounded shadow-md w-full max-w-sm">
+        <h2 className="text-2xl font-bold mb-4 text-center">Login</h2>
 
-        {step === 'login' ? (
-          <>
-            <input
-              type="email"
-              placeholder="Seu e-mail"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="border p-2 w-full rounded"
-              onKeyDown={(e) => e.key === 'Enter' && handleSendOtp()}
-            />
-            <button
-              onClick={handleSendOtp}
-              disabled={loading}
-              className="bg-blue-600 text-white px-4 py-2 rounded w-full hover:bg-blue-700"
-            >
-              {loading ? 'Enviando...' : 'Enviar código'}
-            </button>
-          </>
-        ) : (
-          <>
-            <input
-              type="text"
-              placeholder="Digite o código recebido"
-              value={otp}
-              onChange={(e) => setOtp(e.target.value)}
-              className="border p-2 w-full rounded"
-              onKeyDown={(e) => e.key === 'Enter' && handleVerifyOtp()}
-            />
-            <button
-              onClick={handleVerifyOtp}
-              disabled={loading}
-              className="bg-green-600 text-white px-4 py-2 rounded w-full hover:bg-green-700"
-            >
-              {loading ? 'Verificando...' : 'Entrar'}
-            </button>
-          </>
-        )}
+        {error && <p className="text-red-600 text-sm mb-3">{error}</p>}
 
-        {message && (
-          <p className="text-sm text-center text-red-600 mt-2">{message}</p>
-        )}
-      </div>
+        <label className="block text-sm font-medium mb-1">E-mail</label>
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="border p-2 w-full rounded mb-3"
+          required
+        />
+
+        <label className="block text-sm font-medium mb-1">Senha</label>
+        <input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className="border p-2 w-full rounded mb-4"
+          required
+        />
+
+        <button
+          type="submit"
+          className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700"
+        >
+          Entrar
+        </button>
+      </form>
     </div>
   )
 }
