@@ -11,6 +11,7 @@ interface Container {
   id: string
   name: string
   location: string
+  form_type: string
 }
 
 export default function Dashboard() {
@@ -18,6 +19,7 @@ export default function Dashboard() {
   const [formResponses, setFormResponses] = useState<any[]>([])
   const [name, setName] = useState('')
   const [location, setLocation] = useState('')
+  const [formType, setFormType] = useState('containerForm')
   const [role, setRole] = useState<string | null>(null)
   const [selectedContainer, setSelectedContainer] = useState<Container | null>(null)
   const qrRef = useRef(null)
@@ -72,10 +74,12 @@ export default function Dashboard() {
       id: Math.random().toString(36).substring(2, 10),
       name,
       location,
+      form_type: formType,
     }
     setContainers(prev => [...prev, newContainer])
     setName('')
     setLocation('')
+    setFormType('containerForm')
   }
 
   const handleDeleteContainer = async (id: string) => {
@@ -127,7 +131,7 @@ export default function Dashboard() {
             <h2 className="text-lg font-bold mb-4">{selectedContainer.name}</h2>
             <div ref={qrRef} className="p-4 bg-white inline-block rounded">
               <QRCode
-                value={`http://localhost:3000/container/${selectedContainer.id}`}
+                value={`http://localhost:3000/${selectedContainer.form_type}?id=${selectedContainer.id}&name=${selectedContainer.name}&location=${selectedContainer.location}`}
                 size={256}
                 style={{ height: 'auto', maxWidth: '100%', width: '256px' }}
               />
@@ -168,6 +172,17 @@ export default function Dashboard() {
             onChange={e => setLocation(e.target.value)}
             className="border p-2 w-full rounded mb-2"
           />
+          <select
+            value={formType}
+            onChange={(e) => setFormType(e.target.value)}
+            className="border p-2 w-full rounded mb-4"
+          >
+            <option value="">Selecione o tipo de formulário</option>
+            <option value="containerForm">Checklist Container</option>
+            <option value="execucaoManutencao">Execução de Manutenção</option>
+            <option value="inspecaoVeicular">Inspeção Veicular</option>
+            <option value="inspecaoEmbarcacao">Inspeção de Embarcação</option>
+          </select>
           <button
             className="bg-blue-600 text-white px-4 py-2 rounded w-full hover:bg-blue-700"
             onClick={handleAddContainer}
@@ -192,8 +207,9 @@ export default function Dashboard() {
                 <div className="flex items-center justify-between mt-3">
                   <Link
                     href={{
-                      pathname: `/container/${container.id}`,
+                      pathname: `/${container.form_type}`,
                       query: {
+                        id: container.id,
                         name: container.name,
                         location: container.location,
                       },
@@ -208,7 +224,7 @@ export default function Dashboard() {
                       onClick={() => setSelectedContainer(container)}
                     >
                       <QRCode
-                        value={`http://localhost:3000/container/${container.id}`}
+                        value={`http://localhost:3000/${container.form_type}?id=${container.id}&name=${container.name}&location=${container.location}`}
                         size={64}
                         style={{ height: 'auto', maxWidth: '100%', width: '64px' }}
                       />
