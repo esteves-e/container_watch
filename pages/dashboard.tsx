@@ -5,7 +5,6 @@ import Layout from 'components/layout'
 import { useRouter } from 'next/router'
 import { toPng } from 'html-to-image'
 import { supabase } from '../lib/supabase'
-import React from 'react'
 
 interface Container {
   id: string
@@ -24,7 +23,6 @@ const formatFormTypeLabel = (formType: string) => {
   return map[formType] || formType
 }
 
-// Substituição segura para a URL base
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || (typeof window !== 'undefined' ? window.location.origin : '')
 
 export default function Dashboard() {
@@ -46,15 +44,11 @@ export default function Dashboard() {
 
   useEffect(() => {
     const r = localStorage.getItem('role')
-    if (r) setRole(r)
-  }, [])
-
-  useEffect(() => {
-    const r = localStorage.getItem('role')
     if (r !== 'gerente') {
       router.push('/login')
+    } else {
+      setRole(r)
     }
-    setRole(r as any)
   }, [])
 
   useEffect(() => {
@@ -137,7 +131,6 @@ export default function Dashboard() {
         </button>
       </div>
 
-      {/* Modal QRCode */}
       {selectedContainer && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-6 shadow-lg w-full max-w-sm text-center relative">
@@ -168,7 +161,7 @@ export default function Dashboard() {
       )}
 
       <div className="max-w-3xl mx-auto w-full">
-        {/* Seção de criação de container */}
+        {/* ✅ Seção de criação restaurada */}
         <div className="bg-white rounded-xl shadow-md p-4 border mb-6">
           <h2 className="text-lg font-semibold mb-2">Criar novo container</h2>
           <input
@@ -204,7 +197,7 @@ export default function Dashboard() {
           </button>
         </div>
 
-        {/* Lista de containers */}
+        {/* ✅ Lista de containers */}
         <div>
           <h2 className="text-lg font-semibold mb-3">Containers cadastrados</h2>
           <div className="space-y-4">
@@ -230,7 +223,10 @@ export default function Dashboard() {
                     Acessar formulário
                   </Link>
                   <div className="flex items-center gap-3">
-                    <div className="cursor-pointer" onClick={() => setSelectedContainer(container)}>
+                    <div
+                      className="cursor-pointer"
+                      onClick={() => setSelectedContainer(container)}
+                    >
                       <QRCode
                         value={`${baseUrl}/${container.form_type}?id=${container.id}&name=${container.name}&location=${container.location}`}
                         size={64}
@@ -249,6 +245,35 @@ export default function Dashboard() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+
+        {/* ✅ Lista de formulários preenchidos (sem alterações) */}
+        <div className="mt-10">
+          <h2 className="text-lg font-semibold mb-3">Formulários preenchidos</h2>
+          <div className="bg-white rounded-xl shadow p-4">
+            {formResponses.length === 0 ? (
+              <p className="text-gray-500 text-sm">Nenhum formulário registrado ainda.</p>
+            ) : (
+              <ul className="space-y-2">
+                {formResponses.map((resp) => (
+                  <li key={resp.id} className="flex justify-between items-center border-b pb-2">
+                    <div>
+                      <p className="font-medium">{resp.container_name}</p>
+                      <p className="text-sm text-gray-600">
+                        Por: {resp.email} • {new Date(resp.created_at).toLocaleString()} • {resp.role}
+                      </p>
+                    </div>
+                    <Link
+                      href={`/dashboard/respostas/${resp.id}`}
+                      className="text-blue-600 text-sm hover:underline"
+                    >
+                      Ver detalhes
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </div>
       </div>
