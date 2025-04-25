@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/router'
 import { supabase } from '../lib/supabase'
+import Image from 'next/image'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -42,8 +43,20 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
       <form onSubmit={handleLogin} className="bg-white p-6 rounded shadow-md w-full max-w-sm">
+        
+        {/* LOGO CENTRALIZADO */}
+        <div className="flex justify-center mb-6">
+          <Image
+            src="/logo.png" // Substitua pelo nome real do arquivo, se for diferente
+            alt="Logo ContainerWatch"
+            width={100}
+            height={100}
+            className="object-contain"
+          />
+        </div>
+
         <h2 className="text-2xl font-bold mb-4 text-center">Login</h2>
 
         {error && <p className="text-red-600 text-sm mb-3">{error}</p>}
