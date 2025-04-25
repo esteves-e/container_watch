@@ -24,7 +24,7 @@ const formatFormTypeLabel = (formType: string) => {
   return map[formType] || formType
 }
 
-// 🔁 Substituição segura para a URL base
+// URL base para QRCode
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || (typeof window !== 'undefined' ? window.location.origin : '')
 
 export default function Dashboard() {
@@ -167,8 +167,40 @@ export default function Dashboard() {
       )}
 
       <div className="max-w-3xl mx-auto w-full">
-        {/* Seção de criação */}
-        {/* ... sem mudanças ... */}
+        {/* ✅ Seção de criação reativada */}
+        <div className="bg-white rounded-xl shadow-md p-4 border mb-6">
+          <h2 className="text-lg font-semibold mb-2">Criar novo container</h2>
+          <input
+            type="text"
+            placeholder="Nome do container"
+            value={name}
+            onChange={e => setName(e.target.value)}
+            className="border p-2 w-full rounded mb-2"
+          />
+          <input
+            type="text"
+            placeholder="Localização (opcional)"
+            value={location}
+            onChange={e => setLocation(e.target.value)}
+            className="border p-2 w-full rounded mb-2"
+          />
+          <select
+            value={formType}
+            onChange={(e) => setFormType(e.target.value)}
+            className="border p-2 w-full rounded mb-4"
+          >
+            <option value="">Selecione o tipo de formulário</option>
+            <option value="execucaoManutencao">Execução de Manutenção</option>
+            <option value="inspecaoVeicular">Inspeção Veicular</option>
+            <option value="inspecaoEmbarcacao">Inspeção de Embarcação</option>
+          </select>
+          <button
+            className="bg-blue-600 text-white px-4 py-2 rounded w-full hover:bg-blue-700"
+            onClick={handleAddContainer}
+          >
+            Adicionar container
+          </button>
+        </div>
 
         {/* Lista de containers */}
         <div>
@@ -222,7 +254,33 @@ export default function Dashboard() {
         </div>
 
         {/* Lista de formulários preenchidos */}
-        {/* ... permanece igual ... */}
+        <div className="mt-10">
+          <h2 className="text-lg font-semibold mb-3">Formulários preenchidos</h2>
+          <div className="bg-white rounded-xl shadow p-4">
+            {formResponses.length === 0 ? (
+              <p className="text-gray-500 text-sm">Nenhum formulário registrado ainda.</p>
+            ) : (
+              <ul className="space-y-2">
+                {formResponses.map((resp) => (
+                  <li key={resp.id} className="flex justify-between items-center border-b pb-2">
+                    <div>
+                      <p className="font-medium">{resp.container_name}</p>
+                      <p className="text-sm text-gray-600">
+                        Por: {resp.email} • {new Date(resp.created_at).toLocaleString()} • {resp.role}
+                      </p>
+                    </div>
+                    <Link
+                      href={`/dashboard/respostas/${resp.id}`}
+                      className="text-blue-600 text-sm hover:underline"
+                    >
+                      Ver detalhes
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
       </div>
     </Layout>
   )
