@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import QRCode from 'react-qr-code'
-import Layout from 'components/layout'
+import Layout from '../components/layout'
 import { useRouter } from 'next/router'
 import { toPng } from 'html-to-image'
 import { supabase } from '../lib/supabase'
@@ -18,7 +18,7 @@ const formatFormTypeLabel = (formType: string) => {
     execucaoManutencao: 'Execução de Manutenção',
     inspecaoVeicular: 'Inspeção Veicular',
     inspecaoEmbarcacao: 'Inspeção de Embarcação',
-    containerForm: 'Checklist Container'
+    containerForm: 'Checklist Container',
   }
   return map[formType] || formType
 }
@@ -37,20 +37,18 @@ export default function Dashboard() {
   const router = useRouter()
   const [userEmail, setUserEmail] = useState<string | null>(null)
 
+  // role & email
   useEffect(() => {
-    const email = localStorage.getItem('email')
-    setUserEmail(email)
-  }, [])
-
-  useEffect(() => {
-    const r = localStorage.getItem('role')
-    if (r !== 'gerente') {
+    const storedRole = localStorage.getItem('role')
+    const storedEmail = localStorage.getItem('email')
+    if (storedRole !== 'gerente') {
       router.push('/login')
-    } else {
-      setRole(r)
     }
+    setRole(storedRole)
+    setUserEmail(storedEmail)
   }, [])
 
+  // containers (local)
   useEffect(() => {
     const stored = localStorage.getItem('containers')
     if (stored) {
@@ -62,13 +60,13 @@ export default function Dashboard() {
     localStorage.setItem('containers', JSON.stringify(containers))
   }, [containers])
 
+  // formulário resposta (supabase)
   useEffect(() => {
     const fetchForms = async () => {
       const { data, error } = await supabase
         .from('form_responses')
         .select('*')
         .order('created_at', { ascending: false })
-
       if (!error && data) setFormResponses(data)
     }
 
@@ -143,16 +141,10 @@ export default function Dashboard() {
               />
             </div>
             <div className="flex flex-col gap-3 mt-6">
-              <button
-                onClick={handleDownload}
-                className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-              >
+              <button onClick={handleDownload} className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
                 Baixar QR Code
               </button>
-              <button
-                onClick={() => setSelectedContainer(null)}
-                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-              >
+              <button onClick={() => setSelectedContainer(null)} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
                 Fechar
               </button>
             </div>
@@ -161,120 +153,88 @@ export default function Dashboard() {
       )}
 
       <div className="max-w-3xl mx-auto w-full">
-        {/* ✅ Seção de criação restaurada */}
-        <div className="bg-white rounded-xl shadow-md p-4 border mb-6">
-          <h2 className="text-lg font-semibold mb-2">Criar novo container</h2>
-          <input
-            type="text"
-            placeholder="Nome do container"
-            value={name}
-            onChange={e => setName(e.target.value)}
-            className="border p-2 w-full rounded mb-2"
-          />
-          <input
-            type="text"
-            placeholder="Localização (opcional)"
-            value={location}
-            onChange={e => setLocation(e.target.value)}
-            className="border p-2 w-full rounded mb-2"
-          />
-          <select
-            value={formType}
-            onChange={(e) => setFormType(e.target.value)}
-            className="border p-2 w-full rounded mb-4"
-          >
-            <option value="">Selecione o tipo de formulário</option>
-            <option value="execucaoManutencao">Execução de Manutenção</option>
-            <option value="inspecaoVeicular">Inspeção Veicular</option>
-            <option value="inspecaoEmbarcacao">Inspeção de Embarcação</option>
-            <option value="containerForm">Checklist Container</option>
-          </select>
-          <button
-            className="bg-blue-600 text-white px-4 py-2 rounded w-full hover:bg-blue-700"
-            onClick={handleAddContainer}
-          >
-            Adicionar container
-          </button>
-        </div>
+        {role === 'gerente' && (
+          <div className="bg-white rounded-xl shadow-md p-4 border mb-6">
+            <h2 className="text-lg font-semibold mb-2">Criar novo container</h2>
+            <input
+              type="text"
+              placeholder="Nome do container"
+              value={name}
+              onChange={e => setName(e.target.value)}
+              className="border p-2 w-full rounded mb-2"
+            />
+            <input
+              type="text"
+              placeholder="Localização (opcional)"
+              value={location}
+              onChange={e => setLocation(e.target.value)}
+              className="border p-2 w-full rounded mb-2"
+            />
+            <select
+              value={formType}
+              onChange={(e) => setFormType(e.target.value)}
+              className="border p-2 w-full rounded mb-4"
+            >
+              <option value="">Selecione o tipo de formulário</option>
+              <option value="execucaoManutencao">Execução de Manutenção</option>
+              <option value="inspecaoVeicular">Inspeção Veicular</option>
+              <option value="inspecaoEmbarcacao">Inspeção de Embarcação</option>
+            </select>
+            <button
+              className="bg-blue-600 text-white px-4 py-2 rounded w-full hover:bg-blue-700"
+              onClick={handleAddContainer}
+            >
+              Adicionar container
+            </button>
+          </div>
+        )}
 
-        {/* ✅ Lista de containers */}
-        <div>
-          <h2 className="text-lg font-semibold mb-3">Containers cadastrados</h2>
-          <div className="space-y-4">
-            {containers.map(container => (
-              <div key={container.id} className="border rounded-xl p-4 shadow-sm bg-white">
-                <h3 className="text-md font-bold">{container.name}</h3>
-                {container.location && (
-                  <p className="text-sm text-gray-600">Local: {container.location}</p>
-                )}
-                <p className="text-sm text-gray-600">Tipo de formulário: {formatFormTypeLabel(container.form_type)}</p>
-                <div className="flex items-center justify-between mt-3">
-                  <Link
-                    href={{
-                      pathname: `/${container.form_type}`,
-                      query: {
-                        id: container.id,
-                        name: container.name,
-                        location: container.location,
-                      },
-                    }}
-                    className="text-blue-600 underline text-sm"
+        <h2 className="text-lg font-semibold mb-3">Containers cadastrados</h2>
+        <div className="space-y-4">
+          {containers.map(container => (
+            <div key={container.id} className="border rounded-xl p-4 shadow-sm bg-white">
+              <h3 className="text-md font-bold">{container.name}</h3>
+              {container.location && (
+                <p className="text-sm text-gray-600">Local: {container.location}</p>
+              )}
+              <p className="text-sm text-gray-600">Tipo de formulário: {formatFormTypeLabel(container.form_type)}</p>
+              <div className="flex items-center justify-between mt-3">
+                <Link
+                  href={{
+                    pathname: `/${container.form_type}`,
+                    query: {
+                      id: container.id,
+                      name: container.name,
+                      location: container.location,
+                    },
+                  }}
+                  className="text-blue-600 underline text-sm"
+                >
+                  Acessar formulário
+                </Link>
+                <div className="flex items-center gap-3">
+                  <div
+                    className="cursor-pointer"
+                    onClick={() => setSelectedContainer(container)}
                   >
-                    Acessar formulário
-                  </Link>
-                  <div className="flex items-center gap-3">
-                    <div
-                      className="cursor-pointer"
-                      onClick={() => setSelectedContainer(container)}
-                    >
-                      <QRCode
-                        value={`${baseUrl}/${container.form_type}?id=${container.id}&name=${container.name}&location=${container.location}`}
-                        size={64}
-                        style={{ height: 'auto', maxWidth: '100%', width: '64px' }}
-                      />
-                    </div>
-                    {role === 'gerente' && (
-                      <button
-                        onClick={() => handleDeleteContainer(container.id)}
-                        className="text-red-600 text-sm underline"
-                      >
-                        Excluir
-                      </button>
-                    )}
+                    <QRCode
+                      value={`${baseUrl}/${container.form_type}?id=${container.id}&name=${container.name}&location=${container.location}`}
+                      size={64}
+                      style={{ height: 'auto', maxWidth: '100%', width: '64px' }}
+                    />
                   </div>
+                  {role === 'gerente' && (
+                    <button
+                      onClick={() => handleDeleteContainer(container.id)}
+                      className="text-red-600 text-sm underline"
+                    >
+                      Excluir
+                    </button>
+                  )}
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
-
-        {/* ✅ Lista de formulários preenchidos (sem alterações) */}
-        <div className="mt-10">
-          <h2 className="text-lg font-semibold mb-3">Formulários preenchidos</h2>
-          <div className="bg-white rounded-xl shadow p-4">
-            {formResponses.length === 0 ? (
-              <p className="text-gray-500 text-sm">Nenhum formulário registrado ainda.</p>
-            ) : (
-              <ul className="space-y-2">
-                {formResponses.map((resp) => (
-                  <li key={resp.id} className="flex justify-between items-center border-b pb-2">
-                    <div>
-                      <p className="font-medium">{resp.container_name}</p>
-                      <p className="text-sm text-gray-600">
-                        Por: {resp.email} • {new Date(resp.created_at).toLocaleString()} • {resp.role}
-                      </p>
-                    </div>
-                    <Link
-                      href={`/dashboard/respostas/${resp.id}`}
-                      className="text-blue-600 text-sm hover:underline"
-                    >
-                      Ver detalhes
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
+            </div>
+          ))}
         </div>
       </div>
     </Layout>
