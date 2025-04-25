@@ -24,7 +24,7 @@ export default function App({ Component, pageProps }: AppProps) {
       // Garante que o NProgress dure no mínimo 400ms
       timer = setTimeout(() => {
         NProgress.done()
-      }, 10)
+      }, 0)
     }
 
     router.events.on('routeChangeStart', handleStart)

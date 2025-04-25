@@ -3,14 +3,29 @@
 @tailwind utilities;
 
 
-  #nprogress {
+  /* NProgress customizado */
+#nprogress {
     pointer-events: none;
   }
   
   #nprogress .bar {
-    background: linear-gradient(to right, #3B82F6, #60A5FA); /* Azul degradê */
-    height: 4px;
+    background: linear-gradient(to right, #3B82F6, #60A5FA); /* Degradê azul */
+    height: 3px;
     border-radius: 2px;
     box-shadow: 0 0 10px #3B82F6, 0 0 5px #60A5FA;
+    transition: all 0.4s ease; /* 🔥 Smooth transition */
   }
+  
+  /* Opcional: animação no spinner (se quiser usar no futuro) */
+  #nprogress .peg {
+    display: block;
+    position: absolute;
+    right: 0px;
+    width: 100px;
+    height: 100%;
+    box-shadow: 0 0 10px #3B82F6, 0 0 5px #60A5FA;
+    opacity: 1;
+    transform: rotate(3deg) translate(0px, -4px);
+  }
+  
   
