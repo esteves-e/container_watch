@@ -119,16 +119,6 @@ export default function Dashboard() {
 
   return (
     <Layout>
-      <div className="mb-6">
-        <p className="text-sm text-gray-700 font-medium mb-2">Bem-vindo, {userEmail}</p>
-        <button
-          onClick={handleLogout}
-          className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition"
-        >
-          Sair
-        </button>
-      </div>
-
       {selectedContainer && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-6 shadow-lg w-full max-w-sm text-center relative">
