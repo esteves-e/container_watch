@@ -14,6 +14,16 @@ interface Container {
   form_type: string
 }
 
+const formatFormTypeLabel = (formType: string) => {
+  const map: Record<string, string> = {
+    execucaoManutencao: 'Execução de Manutenção',
+    inspecaoVeicular: 'Inspeção Veicular',
+    inspecaoEmbarcacao: 'Inspeção de Embarcação',
+    containerForm: 'Checklist Container'
+  }
+  return map[formType] || formType
+}
+
 export default function Dashboard() {
   const [containers, setContainers] = useState<Container[]>([])
   const [formResponses, setFormResponses] = useState<any[]>([])
@@ -124,7 +134,6 @@ export default function Dashboard() {
         </button>
       </div>
 
-      {/* Modal com QR Code grande */}
       {selectedContainer && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-6 shadow-lg w-full max-w-sm text-center relative">
@@ -154,7 +163,6 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Bloco de criação de containers */}
       <div className="max-w-3xl mx-auto w-full">
         <div className="bg-white rounded-xl shadow-md p-4 border mb-6">
           <h2 className="text-lg font-semibold mb-2">Criar novo container</h2>
@@ -190,7 +198,6 @@ export default function Dashboard() {
           </button>
         </div>
 
-        {/* Lista de containers */}
         <div>
           <h2 className="text-lg font-semibold mb-3">Containers cadastrados</h2>
           <div className="space-y-4">
@@ -203,6 +210,7 @@ export default function Dashboard() {
                 {container.location && (
                   <p className="text-sm text-gray-600">Local: {container.location}</p>
                 )}
+                <p className="text-sm text-gray-600">Tipo de formulário: {formatFormTypeLabel(container.form_type)}</p>
                 <div className="flex items-center justify-between mt-3">
                   <Link
                     href={{
@@ -228,7 +236,6 @@ export default function Dashboard() {
                         style={{ height: 'auto', maxWidth: '100%', width: '64px' }}
                       />
                     </div>
-
                     {role === 'gerente' && (
                       <button
                         onClick={() => handleDeleteContainer(container.id)}
@@ -244,7 +251,6 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Lista de formulários preenchidos */}
         <div className="mt-10">
           <h2 className="text-lg font-semibold mb-3">Formulários preenchidos</h2>
           <div className="bg-white rounded-xl shadow p-4">
