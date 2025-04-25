@@ -32,24 +32,27 @@ export default function ListaRespostas() {
     }
 
     const fetchData = async () => {
-      const { data, error } = await supabase
-        .from('inspecao_veicular') // ou unificar com outras tabelas conforme necessário
-        .select('*')
-        .order('created_at', { ascending: false })
+      const tabelas = ['inspecao_veicular', 'execucao_manutencao', 'inspecao_diaria_embarcacao']
+      const todasRespostas: FormResponse[] = []
 
-      if (!error && data) {
-        setRespostas(data as FormResponse[])
+      for (const tabela of tabelas) {
+        const { data, error } = await supabase.from(tabela).select('*').order('created_at', { ascending: false })
+        if (!error && data) {
+          todasRespostas.push(...data.map((item: any) => ({ ...item, tipoInspecao: item.tipoInspecao || '-', origem: tabela })))
+        }
       }
+
+      setRespostas(todasRespostas)
       setLoading(false)
     }
 
     fetchData()
   }, [router])
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: string, origem: string) => {
     const confirmed = confirm('Deseja realmente excluir esta resposta?')
     if (!confirmed) return
-    await supabase.from('inspecao_veicular').delete().eq('id', id)
+    await supabase.from(origem).delete().eq('id', id)
     setRespostas(respostas.filter(r => r.id !== id))
   }
 
@@ -70,6 +73,7 @@ export default function ListaRespostas() {
                 <p className="text-sm text-gray-600">{formatarDataHoraBR(resp.created_at)}</p>
                 <p className="text-sm">Veículo/Equipamento: {resp.veiculo || resp.equipamento || resp.embarcacao || '—'}</p>
                 <p className="text-sm">Localização: {resp.location || '—'}</p>
+                <p className="text-sm">Tipo de Inspeção: {resp.tipoInspecao || '—'}</p>
                 <p className="text-sm">E-mail: {resp.email}</p>
                 <div className="mt-2 flex gap-4">
                   <Link
@@ -79,7 +83,7 @@ export default function ListaRespostas() {
                     Ver detalhes
                   </Link>
                   <button
-                    onClick={() => handleDelete(resp.id)}
+                    onClick={() => handleDelete(resp.id, resp.origem || 'inspecao_veicular')}
                     className="text-red-600 text-sm hover:underline"
                   >
                     Excluir
