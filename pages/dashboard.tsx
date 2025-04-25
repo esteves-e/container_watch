@@ -178,7 +178,6 @@ export default function Dashboard() {
             className="border p-2 w-full rounded mb-4"
           >
             <option value="">Selecione o tipo de formulário</option>
-            <option value="containerForm">Checklist Container</option>
             <option value="execucaoManutencao">Execução de Manutenção</option>
             <option value="inspecaoVeicular">Inspeção Veicular</option>
             <option value="inspecaoEmbarcacao">Inspeção de Embarcação</option>

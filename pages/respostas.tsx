@@ -6,12 +6,16 @@ import Link from 'next/link'
 
 interface FormResponse {
   id: string
-  container_id: string
-  container_name: string
-  location: string
-  role: string
+  responsavel: string
+  dataVerificacao?: string
+  veiculo?: string
+  equipamento?: string
+  embarcacao?: string
+  location?: string
   email: string
+  role: string
   created_at: string
+  tipoInspecao?: string
 }
 
 export default function ListaRespostas() {
@@ -28,7 +32,7 @@ export default function ListaRespostas() {
 
     const fetchData = async () => {
       const { data, error } = await supabase
-        .from('form_responses')
+        .from('inspecao_veicular') // ou unificar com outras tabelas conforme necessário
         .select('*')
         .order('created_at', { ascending: false })
 
@@ -41,9 +45,16 @@ export default function ListaRespostas() {
     fetchData()
   }, [router])
 
+  const handleDelete = async (id: string) => {
+    const confirmed = confirm('Deseja realmente excluir esta resposta?')
+    if (!confirmed) return
+    await supabase.from('inspecao_veicular').delete().eq('id', id)
+    setRespostas(respostas.filter(r => r.id !== id))
+  }
+
   return (
     <Layout>
-      <div className="max-w-4xl mx-auto p-4">
+      <div className="max-w-5xl mx-auto p-4">
         <h1 className="text-2xl font-bold mb-4">Respostas dos Formulários</h1>
 
         {loading ? (
@@ -51,36 +62,30 @@ export default function ListaRespostas() {
         ) : respostas.length === 0 ? (
           <p className="text-gray-500">Nenhuma resposta registrada ainda.</p>
         ) : (
-          <div className="bg-white shadow-md rounded-lg overflow-hidden">
-            <table className="w-full table-auto text-sm">
-              <thead className="bg-gray-100">
-                <tr>
-                  <th className="text-left p-3">Data</th>
-                  <th className="text-left p-3">Container</th>
-                  <th className="text-left p-3">Responsável</th>
-                  <th className="text-left p-3">Tipo</th>
-                  <th className="text-left p-3">Ações</th>
-                </tr>
-              </thead>
-              <tbody>
-                {respostas.map((resp) => (
-                  <tr key={resp.id} className="border-b hover:bg-gray-50">
-                    <td className="p-3">{new Date(resp.created_at).toLocaleString()}</td>
-                    <td className="p-3">{resp.container_name}</td>
-                    <td className="p-3">{resp.email}</td>
-                    <td className="p-3 capitalize">{resp.role}</td>
-                    <td className="p-3">
-                      <Link
-                        href={`/dashboard/respostas/${resp.id}`}
-                        className="text-blue-600 hover:underline"
-                      >
-                        Ver detalhes
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {respostas.map(resp => (
+              <div key={resp.id} className="border rounded-lg p-4 shadow bg-white">
+                <h2 className="font-semibold text-lg mb-1">{resp.responsavel}</h2>
+                <p className="text-sm text-gray-600">{new Date(resp.created_at).toLocaleString()}</p>
+                <p className="text-sm">Veículo/Equipamento: {resp.veiculo || resp.equipamento || resp.embarcacao || '—'}</p>
+                <p className="text-sm">Localização: {resp.location || '—'}</p>
+                <p className="text-sm">E-mail: {resp.email}</p>
+                <div className="mt-2 flex gap-4">
+                  <Link
+                    href={`/dashboard/respostas/${resp.id}`}
+                    className="text-blue-600 text-sm hover:underline"
+                  >
+                    Ver detalhes
+                  </Link>
+                  <button
+                    onClick={() => handleDelete(resp.id)}
+                    className="text-red-600 text-sm hover:underline"
+                  >
+                    Excluir
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>
