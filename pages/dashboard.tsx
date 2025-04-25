@@ -23,7 +23,7 @@ const formatFormTypeLabel = (formType: string) => {
   return map[formType] || formType
 }
 
-const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || (typeof window !== 'undefined' ? window.location.origin : '')
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || (typeof window !== 'undefined' ? window.location.origin : '');
 
 export default function Dashboard() {
   const [containers, setContainers] = useState<Container[]>([])
@@ -134,11 +134,11 @@ export default function Dashboard() {
           <div className="bg-white rounded-xl p-6 shadow-lg w-full max-w-sm text-center relative">
             <h2 className="text-lg font-bold mb-4">{selectedContainer.name}</h2>
             <div ref={qrRef} className="p-4 bg-white inline-block rounded">
-              <QRCode
-                value={`${baseUrl}/${selectedContainer.form_type}?id=${selectedContainer.id}&name=${selectedContainer.name}&location=${selectedContainer.location}`}
-                size={256}
-                style={{ height: 'auto', maxWidth: '100%', width: '256px' }}
-              />
+            <QRCode
+              value={`${baseUrl}/${selectedContainer.form_type}?id=${selectedContainer.id}`}
+              size={256}
+              style={{ height: 'auto', maxWidth: '100%', width: '256px' }}
+            />
             </div>
             <div className="flex flex-col gap-3 mt-6">
               <button onClick={handleDownload} className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
@@ -217,11 +217,11 @@ export default function Dashboard() {
                     className="cursor-pointer"
                     onClick={() => setSelectedContainer(container)}
                   >
-                    <QRCode
-                      value={`${baseUrl}/${container.form_type}?id=${container.id}&name=${container.name}&location=${container.location}`}
-                      size={64}
-                      style={{ height: 'auto', maxWidth: '100%', width: '64px' }}
-                    />
+                  <QRCode
+                    value={`${baseUrl}/${container.form_type}?id=${container.id}`}
+                    size={64}
+                    style={{ height: 'auto', maxWidth: '100%', width: '64px' }}
+                  />
                   </div>
                   {role === 'gerente' && (
                     <button
