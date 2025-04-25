@@ -1,3 +1,16 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+
+  #nprogress {
+    pointer-events: none;
+  }
+  
+  #nprogress .bar {
+    background: linear-gradient(to right, #3B82F6, #60A5FA); /* Azul degradê */
+    height: 4px;
+    border-radius: 2px;
+    box-shadow: 0 0 10px #3B82F6, 0 0 5px #60A5FA;
+  }
+  
