@@ -54,11 +54,16 @@ export default function RespostaInspecaoVeicular() {
           <p><strong>Tipo de Inspeção:</strong> {form.tipo_inspecao}</p>
           <div>
             <p><strong>Itens Inspecionados:</strong></p>
-            <ul className="list-disc ml-6">
-              {itens.map((item: string, index: number) => (
-                <li key={index}>{item}</li>
-              ))}
-            </ul>
+            {Array.isArray(form.itens) && form.itens.length > 0 ? (
+  <ul className="list-disc ml-6">
+    {form.itens.map((item: string, index: number) => (
+      <li key={index}>{item}</li>
+    ))}
+  </ul>
+) : (
+  <p className="text-gray-500">Nenhum item inspecionado registrado.</p>
+)}
+
           </div>
           <p><strong>Observações:</strong> {form.observacao}</p>
         </div>
