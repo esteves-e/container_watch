@@ -17,6 +17,13 @@ interface FormResponse {
   role: string
   created_at: string
   tipoInspecao?: string
+  origem?: string
+}
+
+const labelMap: Record<string, string> = {
+  inspecao_veicular: 'Inspeção Veicular',
+  execucao_manutencao: 'Execução de Manutenção',
+  inspecao_diaria_embarcacao: 'Inspeção de Embarcação'
 }
 
 export default function ListaRespostas() {
@@ -74,6 +81,7 @@ export default function ListaRespostas() {
                 <p className="text-sm">Veículo/Equipamento: {resp.veiculo || resp.equipamento || resp.embarcacao || '—'}</p>
                 <p className="text-sm">Localização: {resp.location || '—'}</p>
                 <p className="text-sm">Tipo de Inspeção: {resp.tipoInspecao || '—'}</p>
+                <p className="text-sm">Origem: {labelMap[resp.origem ?? ''] || 'Desconhecido'}</p>
                 <p className="text-sm">E-mail: {resp.email}</p>
                 <div className="mt-2 flex gap-4">
                   <Link
