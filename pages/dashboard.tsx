@@ -5,6 +5,7 @@ import Layout from 'components/layout'
 import { useRouter } from 'next/router'
 import { toPng } from 'html-to-image'
 import { supabase } from '../lib/supabase'
+import React from 'react'
 
 interface Container {
   id: string
@@ -44,10 +45,15 @@ export default function Dashboard() {
 
   useEffect(() => {
     const r = localStorage.getItem('role')
+    if (r) setRole(r)
+  }, [])
+
+  useEffect(() => {
+    const r = localStorage.getItem('role')
     if (r !== 'gerente') {
       router.push('/login')
     }
-    setRole(r)
+    setRole(r as any)
   }, [])
 
   useEffect(() => {
@@ -244,6 +250,34 @@ export default function Dashboard() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+
+        <div className="mt-10">
+          <h2 className="text-lg font-semibold mb-3">Formulários preenchidos</h2>
+          <div className="bg-white rounded-xl shadow p-4">
+            {formResponses.length === 0 ? (
+              <p className="text-gray-500 text-sm">Nenhum formulário registrado ainda.</p>
+            ) : (
+              <ul className="space-y-2">
+                {formResponses.map((resp) => (
+                  <li key={resp.id} className="flex justify-between items-center border-b pb-2">
+                    <div>
+                      <p className="font-medium">{resp.container_name}</p>
+                      <p className="text-sm text-gray-600">
+                        Por: {resp.email} • {new Date(resp.created_at).toLocaleString()} • {resp.role}
+                      </p>
+                    </div>
+                    <Link
+                      href={`/dashboard/respostas/${resp.id}`}
+                      className="text-blue-600 text-sm hover:underline"
+                    >
+                      Ver detalhes
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </div>
       </div>
