@@ -1,13 +1,17 @@
-import { useState } from 'react'
+import { useState, Fragment } from 'react'
 import { useRouter } from 'next/router'
 import { supabase } from '../lib/supabase'
 import Image from 'next/image'
-import { Dialog } from '@headlessui/react'
+import { Dialog, Transition } from '@headlessui/react'
+import { ToastContainer, toast } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false) // 🔥 NOVO: loading para botão
+
   const router = useRouter()
 
   const [showResetModal, setShowResetModal] = useState(false)
@@ -15,19 +19,25 @@ export default function LoginPage() {
 
   const [showOTPModal, setShowOTPModal] = useState(false)
   const [otpEmail, setOtpEmail] = useState('')
+  const [otpSent, setOtpSent] = useState(false)
+  const [otpCode, setOtpCode] = useState('')
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
+    setLoading(true)
 
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     })
 
+    setLoading(false)
+
     if (error) {
-      setError(error.message)
+      toast.error(error.message)
     } else {
+      toast.success('Login realizado com sucesso!')
       localStorage.setItem('email', email)
       localStorage.setItem('role', data.user.user_metadata?.role || 'tecnico')
       router.push('/dashboard')
@@ -42,9 +52,9 @@ export default function LoginPage() {
     })
 
     if (error) {
-      setError(error.message)
+      toast.error('Erro ao enviar e-mail: ' + error.message)
     } else {
-      alert('E-mail de recuperação enviado! Verifique sua caixa de entrada.')
+      toast.success('E-mail de recuperação enviado!')
       setShowResetModal(false)
     }
   }
@@ -54,22 +64,41 @@ export default function LoginPage() {
 
     const { error } = await supabase.auth.signInWithOtp({
       email: otpEmail,
-      options: {
-        shouldCreateUser: false,
-        emailRedirectTo: `${window.location.origin}/dashboard`
-      }
+      options: { shouldCreateUser: false }
     })
 
     if (error) {
-      setError(error.message)
+      toast.error(error.message)
     } else {
-      alert('Link mágico enviado! Verifique sua caixa de entrada.')
-      setShowOTPModal(false)
+      setOtpSent(true)
+      toast.success('Código enviado! Verifique seu e-mail.')
+    }
+  }
+
+  const handleVerifyOTP = async () => {
+    if (!otpEmail || !otpCode) return
+
+    const { data, error } = await supabase.auth.verifyOtp({
+      email: otpEmail,
+      token: otpCode,
+      type: 'email'
+    })
+
+    if (error) {
+      toast.error('Erro: ' + error.message)
+    } else {
+      toast.success('Login realizado com sucesso!')
+      localStorage.setItem('email', otpEmail)
+      localStorage.setItem('role', data.user.user_metadata?.role || 'tecnico')
+      router.push('/dashboard')
     }
   }
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 px-4">
+
+      {/* Toast container */}
+      <ToastContainer position="top-center" autoClose={3000} />
 
       {/* Logo */}
       <div className="mb-2">
@@ -85,8 +114,6 @@ export default function LoginPage() {
       {/* Formulário principal */}
       <form onSubmit={handleLogin} className="bg-white p-6 rounded shadow-md w-full max-w-sm">
         <h2 className="text-2xl font-bold mb-4 text-center">Login</h2>
-
-        {error && <p className="text-red-600 text-sm mb-3">{error}</p>}
 
         <label className="block text-sm font-medium mb-1">E-mail</label>
         <input
@@ -108,9 +135,17 @@ export default function LoginPage() {
 
         <button
           type="submit"
-          className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700"
+          className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 flex justify-center items-center gap-2"
+          disabled={loading}
         >
-          Entrar
+          {loading ? (
+            <svg className="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+            </svg>
+          ) : (
+            'Entrar'
+          )}
         </button>
 
         <p
@@ -122,69 +157,139 @@ export default function LoginPage() {
 
         <p
           className="text-sm text-blue-600 text-center mt-2 cursor-pointer hover:underline"
-          onClick={() => setShowOTPModal(true)}
+          onClick={() => {
+            setShowOTPModal(true)
+            setOtpEmail('')
+            setOtpCode('')
+            setOtpSent(false)
+          }}
         >
           Logar via OTP
         </p>
       </form>
 
       {/* Modal de Recuperar Senha */}
-      <Dialog open={showResetModal} onClose={() => setShowResetModal(false)} className="fixed inset-0 flex items-center justify-center z-50">
-        <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
-        <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-sm relative z-50">
-          <Dialog.Title className="text-lg font-bold mb-4">Recuperar Senha</Dialog.Title>
-          <input
-            type="email"
-            placeholder="Seu e-mail"
-            value={resetEmail}
-            onChange={(e) => setResetEmail(e.target.value)}
-            className="border p-2 w-full rounded mb-4"
-          />
-          <div className="flex justify-end gap-2">
-            <button
-              className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
-              onClick={() => setShowResetModal(false)}
-            >
-              Cancelar
-            </button>
-            <button
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-              onClick={handleSendReset}
-            >
-              Enviar
-            </button>
-          </div>
-        </div>
-      </Dialog>
+      <Transition appear show={showResetModal} as={Fragment}>
+        <Dialog as="div" className="relative z-50" onClose={() => setShowResetModal(false)}>
+          <Transition.Child
+            as={Fragment}
+            enter="ease-out duration-300" enterFrom="opacity-0" enterTo="opacity-100"
+            leave="ease-in duration-200" leaveFrom="opacity-100" leaveTo="opacity-0"
+          >
+            <div className="fixed inset-0 bg-black/30" />
+          </Transition.Child>
 
-      {/* Modal de Login OTP */}
-      <Dialog open={showOTPModal} onClose={() => setShowOTPModal(false)} className="fixed inset-0 flex items-center justify-center z-50">
-        <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
-        <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-sm relative z-50">
-          <Dialog.Title className="text-lg font-bold mb-4">Login via OTP</Dialog.Title>
-          <input
-            type="email"
-            placeholder="Seu e-mail"
-            value={otpEmail}
-            onChange={(e) => setOtpEmail(e.target.value)}
-            className="border p-2 w-full rounded mb-4"
-          />
-          <div className="flex justify-end gap-2">
-            <button
-              className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
-              onClick={() => setShowOTPModal(false)}
+          <div className="fixed inset-0 overflow-y-auto flex items-center justify-center p-4">
+            <Transition.Child
+              as={Fragment}
+              enter="ease-out duration-300" enterFrom="opacity-0 scale-95" enterTo="opacity-100 scale-100"
+              leave="ease-in duration-200" leaveFrom="opacity-100 scale-100" leaveTo="opacity-0 scale-95"
             >
-              Cancelar
-            </button>
-            <button
-              className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-              onClick={handleSendOTP}
-            >
-              Enviar Código
-            </button>
+              <Dialog.Panel className="bg-white rounded-xl p-6 shadow-lg w-full max-w-sm sm:max-w-xs">
+                <Dialog.Title className="text-lg font-bold mb-4">Recuperar Senha</Dialog.Title>
+                <input
+                  type="email"
+                  placeholder="Seu e-mail"
+                  value={resetEmail}
+                  onChange={(e) => setResetEmail(e.target.value)}
+                  className="border p-2 w-full rounded mb-4"
+                />
+                <div className="flex justify-end gap-2">
+                  <button
+                    className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+                    onClick={() => setShowResetModal(false)}
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                    onClick={handleSendReset}
+                  >
+                    Enviar
+                  </button>
+                </div>
+              </Dialog.Panel>
+            </Transition.Child>
           </div>
-        </div>
-      </Dialog>
+        </Dialog>
+      </Transition>
+
+      {/* Modal de Login via OTP */}
+      <Transition appear show={showOTPModal} as={Fragment}>
+        <Dialog as="div" className="relative z-50" onClose={() => setShowOTPModal(false)}>
+          <Transition.Child
+            as={Fragment}
+            enter="ease-out duration-300" enterFrom="opacity-0" enterTo="opacity-100"
+            leave="ease-in duration-200" leaveFrom="opacity-100" leaveTo="opacity-0"
+          >
+            <div className="fixed inset-0 bg-black/30" />
+          </Transition.Child>
+
+          <div className="fixed inset-0 overflow-y-auto flex items-center justify-center p-4">
+            <Transition.Child
+              as={Fragment}
+              enter="ease-out duration-300" enterFrom="opacity-0 scale-95" enterTo="opacity-100 scale-100"
+              leave="ease-in duration-200" leaveFrom="opacity-100 scale-100" leaveTo="opacity-0 scale-95"
+            >
+              <Dialog.Panel className="bg-white rounded-xl p-6 shadow-lg w-full max-w-sm sm:max-w-xs">
+                <Dialog.Title className="text-lg font-bold mb-4">Login via OTP</Dialog.Title>
+
+                {!otpSent && (
+                  <>
+                    <input
+                      type="email"
+                      placeholder="Seu e-mail"
+                      value={otpEmail}
+                      onChange={(e) => setOtpEmail(e.target.value)}
+                      className="border p-2 w-full rounded mb-4"
+                    />
+                    <div className="flex justify-end gap-2">
+                      <button
+                        className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+                        onClick={() => setShowOTPModal(false)}
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                        onClick={handleSendOTP}
+                      >
+                        Enviar Código
+                      </button>
+                    </div>
+                  </>
+                )}
+
+                {otpSent && (
+                  <>
+                    <input
+                      type="text"
+                      placeholder="Código recebido"
+                      value={otpCode}
+                      onChange={(e) => setOtpCode(e.target.value)}
+                      className="border p-2 w-full rounded mb-4"
+                    />
+                    <div className="flex justify-end gap-2">
+                      <button
+                        className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+                        onClick={() => setShowOTPModal(false)}
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                        onClick={handleVerifyOTP}
+                      >
+                        Validar Código
+                      </button>
+                    </div>
+                  </>
+                )}
+              </Dialog.Panel>
+            </Transition.Child>
+          </div>
+        </Dialog>
+      </Transition>
     </div>
   )
 }
