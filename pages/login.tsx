@@ -43,20 +43,21 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
-      <form onSubmit={handleLogin} className="bg-white p-6 rounded shadow-md w-full max-w-sm">
-        
-        {/* LOGO CENTRALIZADO */}
-        <div className="flex justify-center mb-6">
-          <Image
-            src="/logo.png" // Substitua pelo nome real do arquivo, se for diferente
-            alt="Logo ContainerWatch"
-            width={100}
-            height={100}
-            className="object-contain"
-          />
-        </div>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 px-4">
+      
+      {/* LOGO FORA DO FORMULÁRIO */}
+      <div className="mb-8">
+        <Image
+          src="/logo.png" // Substitua se o nome for diferente
+          alt="Logo ContainerWatch"
+          width={300}
+          height={300}
+          className="object-contain"
+        />
+      </div>
 
+      {/* FORMULÁRIO */}
+      <form onSubmit={handleLogin} className="bg-white p-6 rounded shadow-md w-full max-w-sm">
         <h2 className="text-2xl font-bold mb-4 text-center">Login</h2>
 
         {error && <p className="text-red-600 text-sm mb-3">{error}</p>}
