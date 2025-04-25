@@ -16,8 +16,7 @@ export default function Layout({ children }: Props) {
         </div>
         <nav className="flex flex-col space-y-3 text-sm">
           <Link href="/dashboard" className="hover:underline">📦 Dashboard</Link>
-          <Link href="/containers" className="hover:underline">✅ Formulários</Link>
-          <Link href="/login" className="hover:underline">🔐 Login</Link>
+          <Link href="/respostas" className="hover:underline">✅ Formulários</Link>
         </nav>
       </aside>
 

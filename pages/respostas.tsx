@@ -3,6 +3,7 @@ import { useRouter } from 'next/router'
 import { supabase } from '../lib/supabase'
 import Layout from '../components/layout'
 import Link from 'next/link'
+import { formatarDataHoraBR } from '../lib/formatters'
 
 interface FormResponse {
   id: string
@@ -66,7 +67,7 @@ export default function ListaRespostas() {
             {respostas.map(resp => (
               <div key={resp.id} className="border rounded-lg p-4 shadow bg-white">
                 <h2 className="font-semibold text-lg mb-1">{resp.responsavel}</h2>
-                <p className="text-sm text-gray-600">{new Date(resp.created_at).toLocaleString()}</p>
+                <p className="text-sm text-gray-600">{formatarDataHoraBR(resp.created_at)}</p>
                 <p className="text-sm">Veículo/Equipamento: {resp.veiculo || resp.equipamento || resp.embarcacao || '—'}</p>
                 <p className="text-sm">Localização: {resp.location || '—'}</p>
                 <p className="text-sm">E-mail: {resp.email}</p>

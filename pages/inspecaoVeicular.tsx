@@ -3,6 +3,7 @@ import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { Role, isValidRole } from '../lib/roles'
+import { formatarDataHoraBR } from '../lib/formatters'
 
 export default function InspecaoVeicularPage() {
   const router = useRouter()
@@ -88,7 +89,6 @@ export default function InspecaoVeicularPage() {
       if (role === 'gerente') {
         router.push('/respostas')
       } else {
-        // limpa os campos
         setResponsavel('')
         setDataVerificacao('')
         setVeiculo('')

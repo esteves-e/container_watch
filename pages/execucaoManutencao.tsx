@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 import { supabase } from '../lib/supabase'
 import { isValidRole, Role } from '../lib/roles'
+import { formatarDataHoraBR } from '../lib/formatters'
 
 export default function ExecucaoManutencao() {
   const router = useRouter()
