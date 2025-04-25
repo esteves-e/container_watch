@@ -12,6 +12,7 @@ export default function RespostaInspecaoVeicular() {
 
   useEffect(() => {
     if (!id) return
+
     const fetchForm = async () => {
       const { data, error } = await supabase
         .from('inspecao_veicular')
@@ -26,13 +27,14 @@ export default function RespostaInspecaoVeicular() {
       }
       setLoading(false)
     }
+
     fetchForm()
   }, [id])
 
   if (loading) return <Layout><p>Carregando...</p></Layout>
   if (!form) return <Layout><p>Formulário não encontrado.</p></Layout>
 
-  const itens = form.itens || []
+  const itens: string[] = form.itens || []
 
   return (
     <Layout>
@@ -54,16 +56,11 @@ export default function RespostaInspecaoVeicular() {
           <p><strong>Tipo de Inspeção:</strong> {form.tipo_inspecao}</p>
           <div>
             <p><strong>Itens Inspecionados:</strong></p>
-            {Array.isArray(form.itens) && form.itens.length > 0 ? (
-  <ul className="list-disc ml-6">
-    {form.itens.map((item: string, index: number) => (
-      <li key={index}>{item}</li>
-    ))}
-  </ul>
-) : (
-  <p className="text-gray-500">Nenhum item inspecionado registrado.</p>
-)}
-
+            <ul className="list-disc ml-6">
+              {itens.map((item, idx) => (
+                <li key={idx}>{item}</li>
+              ))}
+            </ul>
           </div>
           <p><strong>Observações:</strong> {form.observacao}</p>
         </div>
