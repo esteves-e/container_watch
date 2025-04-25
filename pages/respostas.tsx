@@ -21,9 +21,15 @@ interface FormResponse {
 }
 
 const labelMap: Record<string, string> = {
-  inspecao_veicular: 'Inspeção Veicular',
-  execucao_manutencao: 'Execução de Manutenção',
-  inspecao_diaria_embarcacao: 'Inspeção de Embarcação'
+  inspecaoVeicular: 'Inspeção Veicular',
+  execucaoManutencao: 'Execução de Manutenção',
+  inspecaoEmbarcacao: 'Inspeção de Embarcação'
+}
+
+const origemMap: Record<string, string> = {
+  inspecao_veicular: 'inspecaoVeicular',
+  execucao_manutencao: 'execucaoManutencao',
+  inspecao_diaria_embarcacao: 'inspecaoEmbarcacao'
 }
 
 export default function ListaRespostas() {
@@ -45,7 +51,11 @@ export default function ListaRespostas() {
       for (const tabela of tabelas) {
         const { data, error } = await supabase.from(tabela).select('*').order('created_at', { ascending: false })
         if (!error && data) {
-          todasRespostas.push(...data.map((item: any) => ({ ...item, tipoInspecao: item.tipoInspecao || '-', origem: tabela })))
+          todasRespostas.push(...data.map((item: any) => ({
+            ...item,
+            tipoInspecao: item.tipoInspecao || '-',
+            origem: origemMap[tabela]
+          })))
         }
       }
 
@@ -59,7 +69,8 @@ export default function ListaRespostas() {
   const handleDelete = async (id: string, origem: string) => {
     const confirmed = confirm('Deseja realmente excluir esta resposta?')
     if (!confirmed) return
-    await supabase.from(origem).delete().eq('id', id)
+    const tabelaOriginal = Object.keys(origemMap).find(key => origemMap[key] === origem) || 'inspecao_veicular'
+    await supabase.from(tabelaOriginal).delete().eq('id', id)
     setRespostas(respostas.filter(r => r.id !== id))
   }
 
@@ -85,13 +96,13 @@ export default function ListaRespostas() {
                 <p className="text-sm">E-mail: {resp.email}</p>
                 <div className="mt-2 flex gap-4">
                   <Link
-                    href={`/dashboard/respostas/${resp.id}`}
+                    href={`/respostas/${resp.origem}/${resp.id}`}
                     className="text-blue-600 text-sm hover:underline"
                   >
                     Ver detalhes
                   </Link>
                   <button
-                    onClick={() => handleDelete(resp.id, resp.origem || 'inspecao_veicular')}
+                    onClick={() => handleDelete(resp.id, resp.origem || 'inspecaoVeicular')}
                     className="text-red-600 text-sm hover:underline"
                   >
                     Excluir
