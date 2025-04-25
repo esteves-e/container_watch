@@ -36,7 +36,7 @@ export default function Dashboard() {
   const router = useRouter()
   const [userEmail, setUserEmail] = useState<string | null>(null)
 
-  const baseURL = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
+  const baseURL = process.env.NEXT_PUBLIC_BASE_URL
 
   useEffect(() => {
     const email = localStorage.getItem('email')
