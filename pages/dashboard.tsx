@@ -141,11 +141,11 @@ export default function Dashboard() {
           <div className="bg-white rounded-xl p-6 shadow-lg w-full max-w-sm text-center relative">
             <h2 className="text-lg font-bold mb-4">{selectedContainer.name}</h2>
             <div ref={qrRef} className="p-4 bg-white inline-block rounded">
-              <QRCode
-                value={`${baseURL}/${selectedContainer.form_type}?id=${selectedContainer.id}&name=${selectedContainer.name}&location=${selectedContainer.location}`}
-                size={256}
-                style={{ height: 'auto', maxWidth: '100%', width: '256px' }}
-              />
+            <QRCode
+  value={`${baseURL}/${selectedContainer.form_type}?id=${selectedContainer.id}&name=${selectedContainer.name}&location=${selectedContainer.location}`}
+  size={256}
+  style={{ height: 'auto', maxWidth: '100%', width: '256px' }}
+/>
             </div>
             <div className="flex flex-col gap-3 mt-6">
               <button
