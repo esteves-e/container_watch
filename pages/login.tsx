@@ -46,7 +46,7 @@ export default function LoginPage() {
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 px-4">
       
       {/* LOGO FORA DO FORMULÁRIO */}
-      <div className="mb-8">
+      <div className="mb-2">
         <Image
           src="/logo.png" // Substitua se o nome for diferente
           alt="Logo ContainerWatch"
@@ -92,6 +92,12 @@ export default function LoginPage() {
           onClick={handleForgotPassword}
         >
           Esqueceu sua senha?
+        </p>
+                <p
+          className="text-sm text-blue-600 text-center mt-4 cursor-pointer hover:underline"
+          //onClick={handleUseOTP}
+        >
+          Logar via OTP
         </p>
       </form>
     </div>
