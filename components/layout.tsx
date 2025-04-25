@@ -5,22 +5,6 @@ interface Props {
   children: ReactNode
 }
 
-const handleLogout = async () => {
-  await supabase.auth.signOut()
-  localStorage.clear()
-  router.push('/login')
-}
-
-<div className="mb-6">
-<p className="text-sm text-gray-700 font-medium mb-2">Bem-vindo, {userEmail}</p>
-<button
-  onClick={handleLogout}
-  className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition"
->
-  Sair
-</button>
-</div>
-
 export default function Layout({ children }: Props) {
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col md:flex-row">
