@@ -58,7 +58,23 @@ export default function InspecaoEmbarcacao() {
       alert('Erro ao salvar: ' + error.message)
     } else {
       alert('Formulário enviado com sucesso!')
-      router.push('/dashboard')
+      if (role === 'gerente') {
+        router.push('/respostas')
+      } else {
+        setForm({
+          responsavel: '',
+          dataVerificacao: '',
+          embarcacao: '',
+          status: '',
+          avaria: 'Não',
+          tipoAvaria: '',
+          medidaCorretiva: '',
+          tipoInspecao: '',
+          itens: [],
+          observacoes: ''
+        })
+        router.replace(router.asPath)
+      }
     }
   }
 
@@ -93,7 +109,7 @@ export default function InspecaoEmbarcacao() {
         <input name="responsavel" placeholder="Responsável" value={form.responsavel} onChange={handleChange} className="border p-2 rounded w-full" />
         <input name="dataVerificacao" type="date" value={form.dataVerificacao} onChange={handleChange} className="border p-2 rounded w-full" />
         <input name="embarcacao" placeholder="Identificação da embarcação" value={form.embarcacao} onChange={handleChange} className="border p-2 rounded w-full" />
-        
+
         <select name="status" value={form.status} onChange={handleChange} className="border p-2 rounded w-full">
           <option value="">Status do veículo</option>
           {opcoesStatus.map(opt => <option key={opt}>{opt}</option>)}

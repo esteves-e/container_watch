@@ -85,7 +85,22 @@ export default function InspecaoVeicularPage() {
       alert('Erro ao enviar: ' + error.message)
     } else {
       alert('Formulário enviado com sucesso!')
-      router.push('/containers')
+      if (role === 'gerente') {
+        router.push('/respostas')
+      } else {
+        // limpa os campos
+        setResponsavel('')
+        setDataVerificacao('')
+        setVeiculo('')
+        setStatus('')
+        setAvaria('nao')
+        setTipoAvaria('')
+        setMedidasCorretivas('')
+        setTipoInspecao('')
+        setItens([])
+        setObservacao('')
+        router.replace(router.asPath)
+      }
     }
   }
 
@@ -153,4 +168,3 @@ export default function InspecaoVeicularPage() {
   )
 }
 export {} // Força o TypeScript como módulo
-

@@ -1,4 +1,3 @@
-// pages/execucaoManutencao.tsx
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 import { supabase } from '../lib/supabase'
@@ -67,7 +66,23 @@ export default function ExecucaoManutencao() {
       alert('Erro ao salvar: ' + error.message)
     } else {
       alert('Formulário enviado com sucesso!')
-      router.push('/dashboard')
+      if (role === 'gerente') {
+        router.push('/respostas')
+      } else {
+        setForm({
+          responsavel: '',
+          dataVerificacao: '',
+          equipamento: '',
+          status: '',
+          avaria: 'Não',
+          tipoAvaria: '',
+          medidaCorretiva: '',
+          tipoInspecao: '',
+          itens: [],
+          observacoes: ''
+        })
+        router.replace(router.asPath)
+      }
     }
   }
 
@@ -83,7 +98,7 @@ export default function ExecucaoManutencao() {
     'Inspeção das roldanas de movimentação',
     'Inspeção de vazamentos',
     'Inspeção dos pneus (carro e carretinha)',
-    'Inspeção dos mangotes  e conexões',
+    'Inspecao dos mangotes  e conexoes',
     'Troca de óleo',
     'Troca de filtro de óleo',
     'Troca de filtro de combustível',
