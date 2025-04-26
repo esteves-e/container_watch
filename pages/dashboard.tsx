@@ -112,10 +112,10 @@ export default function Dashboard() {
     toast.success('Container criado com sucesso!')
   }
 
-  const handleDeleteContainer = async (id?: string, name?: string) => {
+  const handleDeleteContainer = (id?: string, name?: string) => {
     if (!id) return
-  
-    const toastId = toast(
+
+    toast(
       ({ closeToast }) => (
         <div className="flex flex-col">
           <p>Tem certeza que deseja excluir <strong>{name}</strong>?</p>
@@ -142,11 +142,6 @@ export default function Dashboard() {
         pauseOnHover: true,
       }
     )
-  }
-  
-
-    setContainers(prev => prev.filter(c => c.id !== id))
-    toast.success('Container excluído com sucesso!')
   }
 
   const handleDownload = () => {
@@ -272,7 +267,7 @@ export default function Dashboard() {
                       </div>
                       {role === 'gerente' && (
                         <button
-                        onClick={() => handleDeleteContainer(container.id, container.name)}
+                          onClick={() => handleDeleteContainer(container.id, container.name)}
                           className="text-red-600 text-sm underline"
                         >
                           Excluir
