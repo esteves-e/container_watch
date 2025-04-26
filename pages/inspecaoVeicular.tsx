@@ -112,15 +112,15 @@ export default function InspecaoVeicularPage() {
 
     const { error } = await supabase.from('inspecao_veicular').insert({
       responsavel: form.responsavel,
-      data_verificacao: form.dataVerificacao,
+      dataVerificacao: form.dataVerificacao,
       veiculo: form.veiculo,
       status: form.status,
       avaria: form.avaria,
-      tipo_avaria: form.tipoAvaria,
-      medidas_corretivas: form.medidasCorretivas,
-      tipo_inspecao: form.tipoInspecao,
+      tipoAvaria: form.tipoAvaria,
+      medidaCorretiva: form.medidasCorretivas,
+      tipoInspecao: form.tipoInspecao,
       itens: form.itens,
-      observacao: form.observacao,
+      observacoes: form.observacao,
       email,
       role
     })
