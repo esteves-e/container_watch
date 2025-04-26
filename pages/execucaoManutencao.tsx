@@ -44,13 +44,14 @@ export default function ExecucaoManutencao() {
       const { data, error } = await supabase
         .from('users')
         .select('name')
-        .eq('email', localEmail)
+        .ilike('email', localEmail)
         .single()
 
       if (data?.name) {
         setForm(prev => ({ ...prev, responsavel: data.name }))
-      } else if (error) {
-        console.error('Erro buscando nome:', error.message)
+      } else {
+        console.warn('Nome não encontrado para este email.')
+        setForm(prev => ({ ...prev, responsavel: '[Nome não encontrado]' }))
       }
     }
 
