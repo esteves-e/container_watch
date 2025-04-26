@@ -1,4 +1,4 @@
-import { useState, Fragment } from 'react'
+import { useState, useEffect, Fragment } from 'react'
 import { useRouter } from 'next/router'
 import { supabase } from '../lib/supabase'
 import Image from 'next/image'
@@ -21,6 +21,20 @@ export default function LoginPage() {
   const [otpEmail, setOtpEmail] = useState('')
   const [otpSent, setOtpSent] = useState(false)
   const [otpCode, setOtpCode] = useState('')
+
+  useEffect(() => {
+    // Garante que o React leia o autofill quando a página carrega
+    const emailInput = document.querySelector('input[type="email"]') as HTMLInputElement | null
+    const passwordInput = document.querySelector('input[type="password"]') as HTMLInputElement | null
+  
+    if (emailInput?.value) {
+      setEmail(emailInput.value)
+    }
+  
+    if (passwordInput?.value) {
+      setPassword(passwordInput.value)
+    }
+  }, [])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()

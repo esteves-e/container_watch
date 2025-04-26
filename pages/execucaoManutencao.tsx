@@ -11,9 +11,11 @@ export default function ExecucaoManutencao() {
   const [email, setEmail] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
+  const hoje = new Date().toISOString().split('T')[0] // yyyy-mm-dd padrão
+
   const [form, setForm] = useState({
     responsavel: '',
-    dataVerificacao: '',
+    dataVerificacao: hoje,
     equipamento: '',
     status: '',
     avaria: 'Não',
@@ -37,6 +39,23 @@ export default function ExecucaoManutencao() {
 
     setRole(localRole)
     setEmail(localEmail)
+
+    // Buscar o nome do usuário no Supabase
+    const fetchNome = async () => {
+      const { data, error } = await supabase
+        .from('usuarios') // precisa ter a tabela "usuarios"
+        .select('nome')
+        .eq('email', localEmail)
+        .single()
+
+      if (data?.nome) {
+        setForm(prev => ({ ...prev, responsavel: data.nome }))
+      } else if (error) {
+        console.error('Erro buscando nome:', error.message)
+      }
+    }
+
+    fetchNome()
   }, [])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -56,6 +75,22 @@ export default function ExecucaoManutencao() {
   const handleSubmit = async () => {
     if (!email || !role) return
 
+    // Validação de campos obrigatórios
+    const requiredFields = ['responsavel', 'dataVerificacao', 'equipamento', 'status', 'tipoInspecao']
+    for (const field of requiredFields) {
+      if (!form[field as keyof typeof form]) {
+        toast.error('Preencha todos os campos obrigatórios.')
+        return
+      }
+    }
+
+    // Validação de ano da data
+    const ano = parseInt(form.dataVerificacao.split('-')[0])
+    if (ano < 2000 || ano > new Date().getFullYear() + 1) {
+      toast.error('Data inválida!')
+      return
+    }
+
     setLoading(true)
     const { error } = await supabase.from('execucao_manutencao').insert([{
       ...form,
@@ -72,8 +107,8 @@ export default function ExecucaoManutencao() {
         router.push('/respostas')
       } else {
         setForm({
-          responsavel: '',
-          dataVerificacao: '',
+          responsavel: form.responsavel,
+          dataVerificacao: hoje,
           equipamento: '',
           status: '',
           avaria: 'Não',
@@ -122,11 +157,11 @@ export default function ExecucaoManutencao() {
         <h1 className="text-2xl font-bold mb-4">Execução do Plano de Manutenção</h1>
 
         <div className="grid gap-4">
-          <input name="responsavel" placeholder="Responsável pela manutenção" value={form.responsavel} onChange={handleChange} className="border p-2 rounded w-full" />
-          <input name="dataVerificacao" type="date" value={form.dataVerificacao} onChange={handleChange} className="border p-2 rounded w-full" />
-          <input name="equipamento" placeholder="Equipamento" value={form.equipamento} onChange={handleChange} className="border p-2 rounded w-full" />
+          <input name="responsavel" placeholder="Responsável pela manutenção" value={form.responsavel} onChange={handleChange} className="border p-2 rounded w-full" required disabled />
+          <input name="dataVerificacao" type="date" value={form.dataVerificacao} onChange={handleChange} className="border p-2 rounded w-full" required />
+          <input name="equipamento" placeholder="Equipamento" value={form.equipamento} onChange={handleChange} className="border p-2 rounded w-full" required />
 
-          <select name="status" value={form.status} onChange={handleChange} className="border p-2 rounded w-full">
+          <select name="status" value={form.status} onChange={handleChange} className="border p-2 rounded w-full" required>
             <option value="">Status do equipamento</option>
             {opcoesStatus.map(opt => <option key={opt}>{opt}</option>)}
           </select>
@@ -143,15 +178,15 @@ export default function ExecucaoManutencao() {
 
           {form.avaria === 'Sim' && (
             <>
-              <input name="tipoAvaria" placeholder="Tipo de avaria" value={form.tipoAvaria} onChange={handleChange} className="border p-2 rounded w-full" />
-              <select name="medidaCorretiva" value={form.medidaCorretiva} onChange={handleChange} className="border p-2 rounded w-full">
+              <input name="tipoAvaria" placeholder="Tipo de avaria" value={form.tipoAvaria} onChange={handleChange} className="border p-2 rounded w-full" required />
+              <select name="medidaCorretiva" value={form.medidaCorretiva} onChange={handleChange} className="border p-2 rounded w-full" required>
                 <option value="">Medidas tomadas</option>
                 {['Corrigido', 'Não corrigido', 'Informado', 'Não informado'].map(opt => <option key={opt}>{opt}</option>)}
               </select>
             </>
           )}
 
-          <select name="tipoInspecao" value={form.tipoInspecao} onChange={handleChange} className="border p-2 rounded w-full">
+          <select name="tipoInspecao" value={form.tipoInspecao} onChange={handleChange} className="border p-2 rounded w-full" required>
             <option value="">Tipo de inspeção</option>
             {tiposInspecao.map(opt => <option key={opt}>{opt}</option>)}
           </select>
