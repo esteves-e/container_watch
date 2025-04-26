@@ -152,8 +152,8 @@ export default function LoginPage() {
         <button
           type="submit"
           className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 flex justify-center items-center gap-2"
-          disabled={loading}
-        >
+          disabled={!email || !password || loading}
+          >
           {loading ? (
             <svg className="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>

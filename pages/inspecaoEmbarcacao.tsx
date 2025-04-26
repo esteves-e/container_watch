@@ -1,14 +1,18 @@
 import { useRouter } from 'next/router'
+import { toast, ToastContainer } from 'react-toastify'
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { Role, isValidRole } from '../lib/roles'
-import { formatarDataHoraBR } from '../lib/formatters'
+import { Dialog, Transition } from '@headlessui/react'
+import { Fragment } from 'react'
 
 export default function InspecaoEmbarcacao() {
   const router = useRouter()
+  const hoje = new Date().toISOString().split('T')[0]
+
   const [form, setForm] = useState({
     responsavel: '',
-    dataVerificacao: '',
+    dataVerificacao: hoje,
     embarcacao: '',
     status: '',
     avaria: 'Não',
@@ -33,6 +37,23 @@ export default function InspecaoEmbarcacao() {
     }
     setEmail(storedEmail)
     setRole(storedRole as Role)
+
+    const fetchName = async () => {
+      const { data, error } = await supabase
+        .from('users')
+        .select('name')
+        .ilike('email', storedEmail)
+        .single()
+
+      if (data?.name) {
+        setForm(prev => ({ ...prev, responsavel: data.name }))
+      } else {
+        console.warn('Nome não encontrado para este email.')
+        setForm(prev => ({ ...prev, responsavel: '[Nome não encontrado]' }))
+      }
+    }
+
+    fetchName()
   }, [])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -51,20 +72,39 @@ export default function InspecaoEmbarcacao() {
 
   const handleSubmit = async () => {
     if (!email || !role) return
+
+    if (!form.responsavel || !form.dataVerificacao || !form.embarcacao || !form.status || !form.tipoInspecao) {
+      toast.error('Preencha todos os campos obrigatórios.')
+      return
+    }
+
+    const ano = parseInt(form.dataVerificacao.split('-')[0])
+    if (ano < 2000 || ano > new Date().getFullYear() + 1) {
+      toast.error('Data inválida!')
+      return
+    }
+
+    if (form.avaria === 'Sim') {
+      if (!form.tipoAvaria || !form.medidaCorretiva) {
+        toast.error('Descreva o tipo de avaria e a medida corretiva.')
+        return
+      }
+    }
+
     setLoading(true)
     const { error } = await supabase.from('inspecao_diaria_embarcacao').insert([{ ...form, email, role }])
     setLoading(false)
 
     if (error) {
-      alert('Erro ao salvar: ' + error.message)
+      toast.error('Erro ao salvar: ' + error.message)
     } else {
-      alert('Formulário enviado com sucesso!')
+      toast.success('Formulário enviado com sucesso!')
       if (role === 'gerente') {
         router.push('/respostas')
       } else {
         setForm({
-          responsavel: '',
-          dataVerificacao: '',
+          responsavel: form.responsavel,
+          dataVerificacao: hoje,
           embarcacao: '',
           status: '',
           avaria: 'Não',
@@ -104,15 +144,16 @@ export default function InspecaoEmbarcacao() {
 
   return (
     <div className="p-6 max-w-3xl mx-auto">
+      <ToastContainer position="top-center" autoClose={3000} />
       <h1 className="text-2xl font-bold mb-4">Inspeção Diária de Embarcação</h1>
 
       <div className="grid gap-4">
-        <input name="responsavel" placeholder="Responsável" value={form.responsavel} onChange={handleChange} className="border p-2 rounded w-full" />
+        <input name="responsavel" placeholder="Responsável" value={form.responsavel} onChange={handleChange} className="border p-2 rounded w-full" disabled />
         <input name="dataVerificacao" type="date" value={form.dataVerificacao} onChange={handleChange} className="border p-2 rounded w-full" />
         <input name="embarcacao" placeholder="Identificação da embarcação" value={form.embarcacao} onChange={handleChange} className="border p-2 rounded w-full" />
 
         <select name="status" value={form.status} onChange={handleChange} className="border p-2 rounded w-full">
-          <option value="">Status do veículo</option>
+          <option value="">Status da embarcação</option>
           {opcoesStatus.map(opt => <option key={opt}>{opt}</option>)}
         </select>
 
