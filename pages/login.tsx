@@ -122,6 +122,7 @@ export default function LoginPage() {
           onChange={(e) => setEmail(e.target.value)}
           className="border p-2 w-full rounded mb-3"
           required
+          autoComplete="email" // ✅ Adicionado
         />
 
         <label className="block text-sm font-medium mb-1">Senha</label>
@@ -131,6 +132,7 @@ export default function LoginPage() {
           onChange={(e) => setPassword(e.target.value)}
           className="border p-2 w-full rounded mb-4"
           required
+          autoComplete="current-password" // ✅ Adicionado
         />
 
         <button
