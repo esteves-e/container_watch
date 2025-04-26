@@ -112,16 +112,38 @@ export default function Dashboard() {
     toast.success('Container criado com sucesso!')
   }
 
-  const handleDeleteContainer = async (id?: string) => {
+  const handleDeleteContainer = async (id?: string, name?: string) => {
     if (!id) return
-    const confirmed = window.confirm("Deseja realmente excluir este container?")
-    if (!confirmed) return
-
-    const { error } = await supabase.from('containers').delete().eq('id', id)
-    if (error) {
-      toast.error("Erro ao excluir: " + error.message)
-      return
-    }
+  
+    const toastId = toast(
+      ({ closeToast }) => (
+        <div className="flex flex-col">
+          <p>Tem certeza que deseja excluir <strong>{name}</strong>?</p>
+          <button
+            onClick={async () => {
+              const { error } = await supabase.from('containers').delete().eq('id', id)
+              if (error) {
+                toast.error("Erro ao excluir: " + error.message)
+              } else {
+                setContainers(prev => prev.filter(c => c.id !== id))
+                toast.success('Container excluído com sucesso!')
+              }
+              closeToast()
+            }}
+            className="mt-2 bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700"
+          >
+            Confirmar exclusão
+          </button>
+        </div>
+      ),
+      {
+        autoClose: false,
+        closeOnClick: false,
+        pauseOnHover: true,
+      }
+    )
+  }
+  
 
     setContainers(prev => prev.filter(c => c.id !== id))
     toast.success('Container excluído com sucesso!')
@@ -250,7 +272,7 @@ export default function Dashboard() {
                       </div>
                       {role === 'gerente' && (
                         <button
-                          onClick={() => handleDeleteContainer(container.id)}
+                        onClick={() => handleDeleteContainer(container.id, container.name)}
                           className="text-red-600 text-sm underline"
                         >
                           Excluir
