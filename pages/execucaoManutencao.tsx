@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
+import { toast, ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 import { useRouter } from 'next/router'
 import { supabase } from '../lib/supabase'
 import { isValidRole, Role } from '../lib/roles'
-import { formatarDataHoraBR } from '../lib/formatters'
 
 export default function ExecucaoManutencao() {
   const router = useRouter()
@@ -64,9 +65,9 @@ export default function ExecucaoManutencao() {
     setLoading(false)
 
     if (error) {
-      alert('Erro ao salvar: ' + error.message)
+      toast.error('Erro ao salvar: ' + error.message)
     } else {
-      alert('Formulário enviado com sucesso!')
+      toast.success('Formulário enviado com sucesso!')
       if (role === 'gerente') {
         router.push('/respostas')
       } else {
@@ -114,62 +115,66 @@ export default function ExecucaoManutencao() {
   ]
 
   return (
-    <div className="p-6 max-w-3xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Execução do Plano de Manutenção</h1>
+    <>
+      <ToastContainer position="top-center" autoClose={3000} />
 
-      <div className="grid gap-4">
-        <input name="responsavel" placeholder="Responsável pela manutenção" value={form.responsavel} onChange={handleChange} className="border p-2 rounded w-full" />
-        <input name="dataVerificacao" type="date" value={form.dataVerificacao} onChange={handleChange} className="border p-2 rounded w-full" />
-        <input name="equipamento" placeholder="Equipamento" value={form.equipamento} onChange={handleChange} className="border p-2 rounded w-full" />
+      <div className="p-6 max-w-3xl mx-auto">
+        <h1 className="text-2xl font-bold mb-4">Execução do Plano de Manutenção</h1>
 
-        <select name="status" value={form.status} onChange={handleChange} className="border p-2 rounded w-full">
-          <option value="">Status do equipamento</option>
-          {opcoesStatus.map(opt => <option key={opt}>{opt}</option>)}
-        </select>
+        <div className="grid gap-4">
+          <input name="responsavel" placeholder="Responsável pela manutenção" value={form.responsavel} onChange={handleChange} className="border p-2 rounded w-full" />
+          <input name="dataVerificacao" type="date" value={form.dataVerificacao} onChange={handleChange} className="border p-2 rounded w-full" />
+          <input name="equipamento" placeholder="Equipamento" value={form.equipamento} onChange={handleChange} className="border p-2 rounded w-full" />
 
-        <label className="font-medium">Avaria encontrada?</label>
-        <div className="flex gap-4">
-          {['Sim', 'Não'].map(opt => (
-            <label key={opt} className="flex items-center gap-1">
-              <input type="radio" name="avaria" value={opt} checked={form.avaria === opt} onChange={handleChange} />
-              {opt}
-            </label>
-          ))}
-        </div>
+          <select name="status" value={form.status} onChange={handleChange} className="border p-2 rounded w-full">
+            <option value="">Status do equipamento</option>
+            {opcoesStatus.map(opt => <option key={opt}>{opt}</option>)}
+          </select>
 
-        {form.avaria === 'Sim' && (
-          <>
-            <input name="tipoAvaria" placeholder="Tipo de avaria" value={form.tipoAvaria} onChange={handleChange} className="border p-2 rounded w-full" />
-            <select name="medidaCorretiva" value={form.medidaCorretiva} onChange={handleChange} className="border p-2 rounded w-full">
-              <option value="">Medidas tomadas</option>
-              {['Corrigido', 'Não corrigido', 'Informado', 'Não informado'].map(opt => <option key={opt}>{opt}</option>)}
-            </select>
-          </>
-        )}
-
-        <select name="tipoInspecao" value={form.tipoInspecao} onChange={handleChange} className="border p-2 rounded w-full">
-          <option value="">Tipo de inspeção</option>
-          {tiposInspecao.map(opt => <option key={opt}>{opt}</option>)}
-        </select>
-
-        <fieldset className="border rounded p-4">
-          <legend className="font-medium">Itens Inspecionados:</legend>
-          <div className="grid grid-cols-2 gap-2 mt-2">
-            {itensInspecao.map(item => (
-              <label key={item} className="flex items-center gap-2">
-                <input type="checkbox" checked={form.itens.includes(item)} onChange={() => handleCheckboxChange(item)} />
-                {item}
+          <label className="font-medium">Avaria encontrada?</label>
+          <div className="flex gap-4">
+            {['Sim', 'Não'].map(opt => (
+              <label key={opt} className="flex items-center gap-1">
+                <input type="radio" name="avaria" value={opt} checked={form.avaria === opt} onChange={handleChange} />
+                {opt}
               </label>
             ))}
           </div>
-        </fieldset>
 
-        <textarea name="observacoes" rows={4} placeholder="Observações" value={form.observacoes} onChange={handleChange} className="border p-2 rounded w-full" />
+          {form.avaria === 'Sim' && (
+            <>
+              <input name="tipoAvaria" placeholder="Tipo de avaria" value={form.tipoAvaria} onChange={handleChange} className="border p-2 rounded w-full" />
+              <select name="medidaCorretiva" value={form.medidaCorretiva} onChange={handleChange} className="border p-2 rounded w-full">
+                <option value="">Medidas tomadas</option>
+                {['Corrigido', 'Não corrigido', 'Informado', 'Não informado'].map(opt => <option key={opt}>{opt}</option>)}
+              </select>
+            </>
+          )}
 
-        <button onClick={handleSubmit} disabled={loading} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-          {loading ? 'Enviando...' : 'Enviar formulário'}
-        </button>
+          <select name="tipoInspecao" value={form.tipoInspecao} onChange={handleChange} className="border p-2 rounded w-full">
+            <option value="">Tipo de inspeção</option>
+            {tiposInspecao.map(opt => <option key={opt}>{opt}</option>)}
+          </select>
+
+          <fieldset className="border rounded p-4">
+            <legend className="font-medium">Itens Inspecionados:</legend>
+            <div className="grid grid-cols-2 gap-2 mt-2">
+              {itensInspecao.map(item => (
+                <label key={item} className="flex items-center gap-2">
+                  <input type="checkbox" checked={form.itens.includes(item)} onChange={() => handleCheckboxChange(item)} />
+                  {item}
+                </label>
+              ))}
+            </div>
+          </fieldset>
+
+          <textarea name="observacoes" rows={4} placeholder="Observações" value={form.observacoes} onChange={handleChange} className="border p-2 rounded w-full" />
+
+          <button onClick={handleSubmit} disabled={loading} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+            {loading ? 'Enviando...' : 'Enviar formulário'}
+          </button>
+        </div>
       </div>
-    </div>
+    </>
   )
 }
