@@ -9,10 +9,11 @@ import { ToastContainer, toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 
 interface Container {
-  id?: string // Agora opcional
+  id?: string
   name: string
   location: string
   form_type: string
+  created_by?: string
 }
 
 const formatFormTypeLabel = (formType: string) => {
@@ -83,10 +84,19 @@ export default function Dashboard() {
   const handleAddContainer = async () => {
     if (!name) return toast.error('Nome é obrigatório!')
 
+    const { data: sessionUser, error: userError } = await supabase.auth.getUser()
+    const user = sessionUser?.user
+
+    if (userError || !user) {
+      toast.error('Erro ao obter usuário autenticado.')
+      return
+    }
+
     const newContainer = {
       name,
       location,
       form_type: formType,
+      created_by: user.id,
     }
 
     const { data, error } = await supabase.from('containers').insert([newContainer]).select().single()
