@@ -9,7 +9,7 @@ import { ToastContainer, toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 
 interface Container {
-  id: string
+  id?: string // Agora opcional
   name: string
   location: string
   form_type: string
@@ -35,12 +35,11 @@ export default function Dashboard() {
   const [formType, setFormType] = useState('containerForm')
   const [role, setRole] = useState<string | null>(null)
   const [selectedContainer, setSelectedContainer] = useState<Container | null>(null)
-  const [loading, setLoading] = useState(true) // 🔥 Loading containers
+  const [loading, setLoading] = useState(true)
   const qrRef = useRef(null)
   const router = useRouter()
   const [userEmail, setUserEmail] = useState<string | null>(null)
 
-  // role & email
   useEffect(() => {
     const storedRole = localStorage.getItem('role')
     const storedEmail = localStorage.getItem('email')
@@ -51,7 +50,6 @@ export default function Dashboard() {
     setUserEmail(storedEmail)
   }, [])
 
-  // containers
   useEffect(() => {
     const fetchContainers = async () => {
       const { data, error } = await supabase
@@ -70,7 +68,6 @@ export default function Dashboard() {
     fetchContainers()
   }, [])
 
-  // formulário resposta
   useEffect(() => {
     const fetchForms = async () => {
       const { data, error } = await supabase
@@ -86,27 +83,27 @@ export default function Dashboard() {
   const handleAddContainer = async () => {
     if (!name) return toast.error('Nome é obrigatório!')
 
-    const newContainer: Container = {
-      id: Math.random().toString(36).substring(2, 10),
+    const newContainer = {
       name,
       location,
       form_type: formType,
     }
 
-    const { error } = await supabase.from('containers').insert([newContainer])
+    const { data, error } = await supabase.from('containers').insert([newContainer]).select().single()
     if (error) {
       toast.error("Erro ao salvar no banco: " + error.message)
       return
     }
 
-    setContainers(prev => [...prev, newContainer])
+    setContainers(prev => [...prev, data])
     setName('')
     setLocation('')
     setFormType('containerForm')
     toast.success('Container criado com sucesso!')
   }
 
-  const handleDeleteContainer = async (id: string) => {
+  const handleDeleteContainer = async (id?: string) => {
+    if (!id) return
     const confirmed = window.confirm("Deseja realmente excluir este container?")
     if (!confirmed) return
 
@@ -139,7 +136,7 @@ export default function Dashboard() {
 
   return (
     <Layout>
-      <ToastContainer position="top-center" autoClose={3000} /> {/* Toast configurado */}
+      <ToastContainer position="top-center" autoClose={3000} />
 
       {selectedContainer && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -201,9 +198,8 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* 🔵 Loading enquanto busca containers */}
         {loading ? (
-          <div className="text-center text-gray-600 py-10">
+          <div className="text-center text-gray-600 py-10 animate-pulse">
             Carregando containers...
           </div>
         ) : (
