@@ -28,4 +28,19 @@
     transform: rotate(3deg) translate(0px, -4px);
   }
   
+  /* Dark mode */
+html.dark {
+    background-color: #111827; /* gray-900 */
+    color: #F9FAFB; /* gray-100 */
+  }
+  
+  body.dark {
+    background-color: #111827;
+  }
+  
+  /* NProgress bar no dark também? */
+  html.dark #nprogress .bar {
+    background: linear-gradient(to right, #60A5FA, #3B82F6); /* inverter o degradê se quiser */
+  }
+  
   
