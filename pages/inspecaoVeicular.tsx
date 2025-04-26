@@ -7,7 +7,7 @@ import { Role, isValidRole } from '../lib/roles'
 export default function InspecaoVeicularPage() {
   const router = useRouter()
   const hoje = new Date().toISOString().split('T')[0]
-
+  const [loading, setLoading] = useState(false)
   const [role, setRole] = useState<Role | null>(null)
   const [email, setEmail] = useState<string | null>(null)
 
