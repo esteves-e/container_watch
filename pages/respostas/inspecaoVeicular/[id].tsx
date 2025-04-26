@@ -43,17 +43,17 @@ export default function RespostaInspecaoVeicular() {
 
         <div className="space-y-2">
           <p><strong>Responsável:</strong> {form.responsavel}</p>
-          <p><strong>Data da Verificação:</strong> {formatarDataHoraBR(form.data_verificacao)}</p>
+          <p><strong>Data da Verificação:</strong> {formatarDataHoraBR(form.dataVerificacao)}</p>
           <p><strong>Veículo:</strong> {form.veiculo}</p>
           <p><strong>Status:</strong> {form.status}</p>
           <p><strong>Avaria:</strong> {form.avaria}</p>
-          {form.avaria === 'sim' && (
+          {form.avaria === 'Sim' && (
             <>
-              <p><strong>Tipo de Avaria:</strong> {form.tipo_avaria}</p>
-              <p><strong>Medidas Corretivas:</strong> {form.medidas_corretivas}</p>
+              <p><strong>Tipo de Avaria:</strong> {form.tipoAvaria}</p>
+              <p><strong>Medidas Corretivas:</strong> {form.medidaCorretiva}</p>
             </>
           )}
-          <p><strong>Tipo de Inspeção:</strong> {form.tipo_inspecao}</p>
+          <p><strong>Tipo de Inspeção:</strong> {form.tipoInspecao}</p>
           <div>
             <p><strong>Itens Inspecionados:</strong></p>
             <ul className="list-disc ml-6">
@@ -62,7 +62,7 @@ export default function RespostaInspecaoVeicular() {
               ))}
             </ul>
           </div>
-          <p><strong>Observações:</strong> {form.observacao}</p>
+          <p><strong>Observações:</strong> {form.observacoes}</p>
         </div>
 
         <button
