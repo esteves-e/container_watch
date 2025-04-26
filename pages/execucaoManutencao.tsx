@@ -40,21 +40,21 @@ export default function ExecucaoManutencao() {
     setRole(localRole)
     setEmail(localEmail)
 
-    const fetchNome = async () => {
+    const fetchName = async () => {
       const { data, error } = await supabase
         .from('users')
         .select('name')
         .eq('email', localEmail)
         .single()
 
-      if (data?.nome) {
-        setForm(prev => ({ ...prev, responsavel: data.nome }))
+      if (data?.name) {
+        setForm(prev => ({ ...prev, responsavel: data.name }))
       } else if (error) {
         console.error('Erro buscando nome:', error.message)
       }
     }
 
-    fetchNome()
+    fetchName()
   }, [])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
